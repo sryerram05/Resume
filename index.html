@@ -102,29 +102,53 @@
 
   .hobby-icon { font-size: 26px; margin-bottom: 8px; }
 
-  /* ---- What If? section ---- */
+  /* ---- Articles section ---- */
   .section-intro { color: var(--muted); font-size: 15px; margin: -10px 0 20px; max-width: 680px; }
-  details.whatif { padding: 0; overflow: hidden; }
-  details.whatif summary {
+  details.article { padding: 0; overflow: hidden; }
+  details.article summary {
     list-style: none; cursor: pointer; padding: 20px 24px;
     display: flex; justify-content: space-between; align-items: center; gap: 16px;
   }
-  details.whatif summary::-webkit-details-marker { display: none; }
-  details.whatif summary h3 { font-size: 1.1rem; }
-  details.whatif summary .toggle {
+  details.article summary::-webkit-details-marker { display: none; }
+  details.article summary h3 { font-size: 1.1rem; }
+  .article-meta { font-family: var(--mono); font-size: 12px; color: var(--muted); margin-bottom: 4px; }
+  .article-cat { color: var(--accent-2); }
+  .article-body ul { margin: 8px 0 8px 18px; }
+  .article-body blockquote {
+    border-left: 3px solid var(--accent-2); padding: 8px 14px; margin: 12px 0;
+    color: #c9d1d9; font-style: italic; background: rgba(88,166,255,0.06); border-radius: 0 6px 6px 0;
+  }
+  .byline { font-family: var(--mono); font-size: 12px; color: var(--muted); margin-top: 6px; }
+  pre.code {
+    font-family: var(--mono); font-size: 12.5px; line-height: 1.55; color: #c9d1d9;
+    background: var(--bg); border: 1px solid var(--border); border-radius: 6px;
+    padding: 12px 14px; margin: 10px 0; overflow-x: auto; white-space: pre;
+  }
+  pre.code .c { color: var(--muted); }
+  pre.code .k { color: #ff7b72; }
+  pre.code .s { color: #a5d6ff; }
+  pre.output { border-color: rgba(63,185,80,0.5); color: var(--accent); }
+  .tbl-wrap { overflow-x: auto; margin: 12px 0; }
+  table.data { border-collapse: collapse; width: 100%; font-size: 14px; }
+  table.data th, table.data td { border-bottom: 1px solid var(--border); padding: 8px 10px; text-align: left; white-space: nowrap; }
+  table.data th { font-family: var(--mono); font-size: 12px; color: var(--muted); font-weight: 600; text-transform: uppercase; letter-spacing: .04em; }
+  table.data td { color: #c9d1d9; }
+  table.data td.yes, .yes { color: var(--accent); font-weight: 600; }
+  table.data td.no, .no { color: #f0883e; font-weight: 600; }
+  details.article summary .toggle {
     font-family: var(--mono); font-size: 12px; color: var(--accent);
     border: 1px solid rgba(63,185,80,0.5); border-radius: 999px; padding: 2px 10px; white-space: nowrap;
   }
-  details.whatif[open] summary .toggle::after { content: ' −'; }
-  details.whatif:not([open]) summary .toggle::after { content: ' +'; }
-  details.whatif[open] summary { border-bottom: 1px solid var(--border); }
-  details.whatif summary:hover h3 { color: var(--accent); }
-  .whatif-body { padding: 8px 24px 24px; }
-  .whatif-body h4 {
+  details.article[open] summary .toggle::after { content: ' −'; }
+  details.article:not([open]) summary .toggle::after { content: ' +'; }
+  details.article[open] summary { border-bottom: 1px solid var(--border); }
+  details.article summary:hover h3 { color: var(--accent); }
+  .article-body { padding: 8px 24px 24px; }
+  .article-body h4 {
     font-family: var(--mono); font-size: 13px; color: var(--accent-2);
     margin: 22px 0 8px; text-transform: uppercase; letter-spacing: 0.06em;
   }
-  .whatif-body p { margin: 10px 0; }
+  .article-body p { margin: 10px 0; }
   .tldr {
     border-left: 3px solid var(--accent); background: rgba(63,185,80,0.07);
     padding: 10px 14px; border-radius: 0 6px 6px 0; margin: 14px 0 4px;
@@ -181,7 +205,7 @@
   .reveal.visible { opacity: 1; transform: none; }
 
   .card { transition: transform .2s ease, border-color .2s ease, box-shadow .2s ease; }
-  .card:not(.whatif):hover {
+  .card:not(.article):hover {
     transform: translateY(-4px); border-color: rgba(63,185,80,0.6);
     box-shadow: 0 8px 24px rgba(0,0,0,0.35);
   }
@@ -218,7 +242,7 @@
       <li><a href="#experience">experience</a></li>
       <li><a href="#skills">skills</a></li>
       <li><a href="#hobbies">hobbies</a></li>
-      <li><a href="#what-if">what-if</a></li>
+      <li><a href="#articles">articles</a></li>
       <li><a href="#resume">resume</a></li>
       <li><a href="playground.html">playground</a></li>
     </ul>
@@ -321,11 +345,11 @@
         <p style="margin-top:14px"><a href="https://github.com/sryerram05/proj-1500" target="_blank" rel="noopener">Go to GitHub Repo →</a></p>
       </div>
 
-        <div class="card">
+      <div class="card">
         <h3>Memory Game</h3>
         <p class="meta">Personal Project</p>
         <p>
-          Game I made a long time ago that is a simple memory game where you have to match pairs of cards. The game has a timer and a score system. The game is created using HTML, CSS, and JavaScript. 
+          Game I made a long time ago that is a simple memory game where you have to match pairs of cards. The game has a timer and a score system. The game is created using HTML, CSS, and JavaScript.
         </p>
         <div class="tags"><span class="tag">HTML</span><span class="tag">CSS</span><span class="tag">JavaScript</span></div>
         <p style="margin-top:14px"><a href="https://github.com/sryerram05/memory-game" target="_blank" rel="noopener">Go to GitHub Repo →</a></p>
@@ -424,17 +448,20 @@
     </div>
   </section>
 
-  <section id="what-if">
-    <h2>What If?</h2>
-    <p class="section-intro">Bizarre scenarios, answered with real physics. Click a question to see the math.</p>
+  <section id="articles">
+    <h2>Articles</h2>
+    <p class="section-intro">Write-ups on physics, probability and games: the math behind odd questions. Click a title to read.</p>
 
-    <!-- To add a new scenario, copy one <details class="card whatif"> ... </details> block below. -->
-    <details class="card whatif">
+    <!-- To add a new article, copy one <details class="card article"> ... </details> block below. -->
+    <details class="card article">
       <summary>
-        <h3>What if a 5-meter-radius black hole spawned in your bedroom?</h3>
-        <span class="toggle">math</span>
+        <div>
+          <p class="article-meta"><span class="article-cat">Physics</span> · What If? · 4 min read</p>
+          <h3>What if a 5-meter-radius black hole spawned in your bedroom?</h3>
+        </div>
+        <span class="toggle">read</span>
       </summary>
-      <div class="whatif-body">
+      <div class="article-body">
         <p class="tldr"><strong>Short answer:</strong> you would never get to see it. The Earth would be destroyed almost instantly, and the Moon would fall in a few hours later.</p>
 
         <h4>Step 1: How heavy is it?</h4>
@@ -493,6 +520,299 @@
         <p class="punchline">Safe to say, you will not be going to school tomorrow.</p>
       </div>
     </details>
+
+    <details class="card article">
+      <summary>
+        <div>
+          <p class="article-meta"><span class="article-cat">Probability</span> · Python simulation · 4 min read</p>
+          <h3>The Monty Hall Problem: Analysis and Proof</h3>
+        </div>
+        <span class="toggle">read</span>
+      </summary>
+      <div class="article-body">
+        <p class="byline">Siddarth Yerram · December 25, 2025</p>
+
+        <p>Here is a question that seems simple enough:</p>
+        <blockquote>
+          You are on a game show with three doors. Behind two of them is nothing; behind one is a brand-new Ferrari.
+          You pick a door: 1, 2 or 3. The host then opens one of the other doors, revealing nothing, and asks if you
+          want to switch. Do you switch, and why?
+        </blockquote>
+        <p class="tldr"><strong>Short answer:</strong> always switch. Staying wins 1/3 of the time; switching wins 2/3 of the time.</p>
+
+        <h4>Analysis</h4>
+        <p>
+          The Monty Hall problem, first introduced in 1975, shows a counterintuitive result in probability theory.
+          There are three doors: one hides a car (the prize), and the other two hide goats. When you first pick a door,
+          the chance that it hides the car is <strong>1/3 (33.3%)</strong>, and the chance the car is behind one of the
+          other two doors is <strong>2/3 (66.7%)</strong>.
+        </p>
+        <p>
+          The host then opens one of the two remaining doors and reveals a goat. The key rule: the host
+          <em>never</em> opens your door and <em>never</em> reveals the car. You can now stay or switch to the other
+          unopened door.
+        </p>
+        <p>
+          It looks like the odds should now be 50–50, but they aren't. Your original door still has a 1/3 chance,
+          because the host's move tells you nothing new about it. The 2/3 that was spread across the two other doors
+          now sits entirely on the single unopened door, since the host removed the goat for you.
+        </p>
+        <div class="stat-row">
+          <div class="stat"><div class="num">33.3%</div><div class="lbl">win chance if you stay</div></div>
+          <div class="stat"><div class="num">66.7%</div><div class="lbl">win chance if you switch</div></div>
+          <div class="stat"><div class="num">2×</div><div class="lbl">better odds by switching</div></div>
+        </div>
+
+        <h4>Proof with Python</h4>
+        <p>To prove it, I simulated the game 100,000 times for each strategy:</p>
+<pre class="code"><span class="k">import</span> random
+
+<span class="k">def</span> monty_hall(trials, switch):
+    wins = 0
+    revealed = -1
+
+    <span class="k">for</span> i <span class="k">in</span> range(trials):
+        <span class="c"># set up doors</span>
+        doors = [0, 0, 0]
+        car = random.randint(0, 2)
+        doors[car] = 1
+
+        <span class="c"># player chooses a door</span>
+        choice = random.randint(0, 2)
+
+        <span class="c"># host reveals a goat door (not chosen, not the car)</span>
+        <span class="k">for</span> j <span class="k">in</span> range(3):
+            <span class="k">if</span> j != choice <span class="k">and</span> doors[j] == 0:
+                revealed = j
+                <span class="k">break</span>
+
+        <span class="c"># player switches if required</span>
+        <span class="k">if</span> switch:
+            <span class="k">for</span> j <span class="k">in</span> range(3):
+                <span class="k">if</span> j != choice <span class="k">and</span> j != revealed:
+                    choice = j
+                    <span class="k">break</span>
+
+        <span class="c"># check win</span>
+        <span class="k">if</span> doors[choice] == 1:
+            wins += 1
+
+    <span class="k">return</span> (wins / trials) * 100
+
+print(<span class="s">"Win % without switching: "</span> + str(monty_hall(100000, <span class="k">False</span>)))
+print(<span class="s">"Win % with switching: "</span> + str(monty_hall(100000, <span class="k">True</span>)))</pre>
+        <p>Sample output:</p>
+<pre class="code output">Win % without switching: 33.28
+Win % with switching: 66.671</pre>
+        <p>
+          In each trial, one of three doors randomly gets the car. The player picks a random door, and the host opens a
+          different door that has a goat. If switching is turned on, the player moves to the only remaining unopened door.
+          The program then checks whether the final door has the car and counts the win. After all trials, the function
+          returns the win percentage.
+        </p>
+        <p>
+          Running it for both strategies confirms the math: staying wins about a third of the time, and switching wins
+          about two thirds of the time.
+        </p>
+        <p class="punchline">Final verdict: always switch. It doubles your chance of driving home in the Ferrari.</p>
+      </div>
+    </details>
+
+    <details class="card article">
+      <summary>
+        <div>
+          <p class="article-meta"><span class="article-cat">Games</span> · Probability &amp; psychology · 8 min read</p>
+          <h3>Strategic Analysis of the Card Game "Low Count"</h3>
+        </div>
+        <span class="toggle">read</span>
+      </summary>
+      <div class="article-body">
+        <p class="byline">Siddarth Yerram · December 25, 2025</p>
+        <p class="tldr"><strong>Short answer:</strong> on the first round, draw from the pile when the odds of getting an equal or lower card are above 50%; otherwise take the card just played. After that, watch the players, not just the cards.</p>
+
+        <h4>How the game works</h4>
+        <p>
+          Low Count is played by two or more players with a full 52-card deck plus two jokers. Each player is dealt
+          seven cards, and the goal is to get the total point value of your hand as low as possible. Players take turns
+          playing and drawing cards, trying to swap high cards for low ones.
+        </p>
+        <ul>
+          <li><strong>Card values:</strong> number cards are worth their face value, face cards are worth 10, aces are worth 1, and jokers are worth 0.</li>
+          <li><strong>Joker rank:</strong> after the deal, two cards are turned face up. One starts the discard pile; the other sets the joker rank for the round. Every card of that rank becomes a joker worth 0. For example, if the 3 of hearts is turned up, every 3 in the game is a joker.</li>
+          <li><strong>Turns:</strong> play goes clockwise. On your turn you play one card to the discard pile, then take a replacement to stay at seven cards: either the card the previous player just played, or a random card from the draw pile.</li>
+          <li><strong>Matching rule:</strong> if the previous player plays a card and you hold the same rank, you can immediately play all your matching cards, and you don't draw a replacement that turn.</li>
+          <li><strong>Calling "show":</strong> if you think you have the lowest total, call "show" and everyone reveals. If you're lowest, you score 0 for the round. If you're not, you get 25 points, and whoever actually had the lowest hand scores 0.</li>
+          <li><strong>Winning:</strong> the game lasts 13 rounds. The lowest total score wins.</li>
+        </ul>
+
+        <h4>The question</h4>
+        <p>When should you take the card the previous player played, and when should you draw from the pile? What are the chances of drawing a lower card?</p>
+
+        <h4>Worked example: Scenario 1</h4>
+        <p>
+          The previous player plays an <strong>8</strong>, the joker rank is <strong>9</strong>, and you're the second
+          player, so nothing else has been played yet. There are 13 possible ranks you could draw (Ace through King).
+        </p>
+        <ul>
+          <li><strong>Bad draws</strong> (worth more than 8): 10, J, Q, K → <strong>4</strong></li>
+          <li><strong>Good draws</strong> (worth less than 8): A, 2, 3, 4, 5, 6, 7, plus 9 (joker, worth 0) → <strong>8</strong></li>
+          <li><strong>Equal draw:</strong> another 8. It doesn't make your hand worse, so count it as good → <strong>9</strong> good in total</li>
+        </ul>
+        <div class="eq">P(good) = 9 / 13 ≈ <span class="result">69.23%</span> &nbsp;&nbsp; P(bad) = 4 / 13 ≈ 30.77%</div>
+        <p>With almost a 70% chance of doing at least as well, the best move is to draw from the pile.</p>
+
+        <h4>All six scenarios</h4>
+        <p>The same method applied to six combinations of played card and joker rank:</p>
+        <div class="tbl-wrap">
+          <table class="data">
+            <thead><tr><th>#</th><th>Card played</th><th>Joker rank</th><th>Good / Bad</th><th>P(good)</th><th>Best move</th></tr></thead>
+            <tbody>
+              <tr><td>1</td><td>8</td><td>9</td><td>9 / 4</td><td>69.23%</td><td class="yes">Draw from pile</td></tr>
+              <tr><td>2</td><td>8</td><td>7</td><td>8 / 5</td><td>61.54%</td><td class="yes">Draw from pile</td></tr>
+              <tr><td>3</td><td>7</td><td>8</td><td>8 / 5</td><td>61.54%</td><td class="yes">Draw from pile</td></tr>
+              <tr><td>4</td><td>7</td><td>6</td><td>7 / 6</td><td>53.85%</td><td class="yes">Draw from pile</td></tr>
+              <tr><td>5</td><td>6</td><td>7</td><td>7 / 6</td><td>53.85%</td><td class="yes">Draw from pile</td></tr>
+              <tr><td>6</td><td>6</td><td>5</td><td>6 / 7</td><td>46.15%</td><td class="no">Take the 6</td></tr>
+            </tbody>
+          </table>
+        </div>
+        <p>
+          The turning point is around 6. If a 6 is played and the joker rank is <em>higher</em> than 6, draw from the pile.
+          If the joker rank is <em>lower</em> than 6, take the 6. This is the safest play. You can take more risks and get
+          lucky, but you can also get unlucky. Luck matters, but the numbers don't lie.
+        </p>
+
+        <h4>Python: first-round odds</h4>
+<pre class="code"><span class="c"># prevCard - the card the previous player played</span>
+<span class="c"># joker    - the rank chosen as the joker</span>
+
+<span class="k">def</span> chance(prevCard, joker):
+    allCards = [<span class="s">'A'</span>, 2, 3, 4, 5, 6, 7, 8, 9, 10, <span class="s">'J'</span>, <span class="s">'Q'</span>, <span class="s">'K'</span>]
+    goodCards = []
+    badCards = []
+
+    index = allCards.index(prevCard)
+    <span class="k">for</span> i <span class="k">in</span> range(len(allCards)):
+        <span class="k">if</span> i &lt;= index <span class="k">or</span> allCards[i] == joker:
+            goodCards.append(allCards[i])
+        <span class="k">else</span>:
+            badCards.append(allCards[i])
+
+    <span class="k">return</span> [len(goodCards) / len(allCards), len(badCards) / len(allCards)]
+
+odds = chance(6, 3)
+print(<span class="s">"Chance of picking a good card from the pile:"</span>, odds[0] * 100, <span class="s">"%"</span>)
+print(<span class="s">"Chance of picking a bad card from the pile:"</span>, odds[1] * 100, <span class="s">"%"</span>)</pre>
+        <p>
+          The code finds the position of the card the previous player played. Every rank at or below it, plus the joker
+          rank, goes into the good list; everything else goes into the bad list. It then returns the chance of drawing a
+          good or bad card from the pile.
+        </p>
+        <p>
+          Keep in mind this only works for the <strong>first turn</strong>. Later on, many cards have already been played
+          and are no longer in the pile, so the real odds shift. Tracking that by hand, even with two players, is nearly
+          impossible. That's where simulation helps.
+        </p>
+
+        <h4>Python: who gets a specific card?</h4>
+<pre class="code"><span class="k">import</span> random
+
+<span class="k">def</span> simulate_specific_card(num_players, target_card, simulations, cards_per_player):
+    hits_per_player = [0] * num_players
+    hits_any_player = 0
+
+    <span class="k">for</span> _ <span class="k">in</span> range(simulations):
+        deck = []
+        suits = [<span class="s">"S"</span>, <span class="s">"H"</span>, <span class="s">"D"</span>, <span class="s">"C"</span>]
+        ranks = [<span class="s">"Ace"</span>, <span class="s">"2"</span>, <span class="s">"3"</span>, <span class="s">"4"</span>, <span class="s">"5"</span>, <span class="s">"6"</span>, <span class="s">"7"</span>,
+                 <span class="s">"8"</span>, <span class="s">"9"</span>, <span class="s">"10"</span>, <span class="s">"Jack"</span>, <span class="s">"Queen"</span>, <span class="s">"King"</span>]
+        <span class="k">for</span> suit <span class="k">in</span> suits:
+            <span class="k">for</span> rank <span class="k">in</span> ranks:
+                deck.append(f<span class="s">"{rank} {suit}"</span>)
+        deck.append(<span class="s">"Joker (Red)"</span>)
+        deck.append(<span class="s">"Joker (Black)"</span>)
+
+        <span class="c"># shuffle and deal</span>
+        random.shuffle(deck)
+        dealt = []
+        <span class="k">for</span> i <span class="k">in</span> range(num_players):
+            start = i * cards_per_player
+            dealt.append(deck[start:start + cards_per_player])
+
+        <span class="c"># check for the target card</span>
+        found_any = <span class="k">False</span>
+        <span class="k">for</span> i, hand <span class="k">in</span> enumerate(dealt):
+            <span class="k">if</span> target_card <span class="k">in</span> hand:
+                hits_per_player[i] += 1
+                found_any = <span class="k">True</span>
+        <span class="k">if</span> found_any:
+            hits_any_player += 1
+
+    <span class="k">return</span> {
+        <span class="s">"per_player"</span>: [h / simulations <span class="k">for</span> h <span class="k">in</span> hits_per_player],
+        <span class="s">"any_player"</span>: hits_any_player / simulations,
+    }
+
+result = simulate_specific_card(2, <span class="s">"Joker (Red)"</span>, 100_000, 7)
+<span class="k">for</span> i, p <span class="k">in</span> enumerate(result[<span class="s">"per_player"</span>]):
+    print(f<span class="s">"Player {i + 1}: {p}"</span>)
+print(f<span class="s">"At least one player: {result['any_player']}"</span>)</pre>
+        <p>Sample output:</p>
+<pre class="code output">Player 1: 0.13
+Player 2: 0.131
+At least one player: 0.2605</pre>
+        <p>
+          The program builds a 54-card deck (52 cards plus two jokers), shuffles it, and deals seven cards to each player.
+          It repeats this 100,000 times, counting how often a chosen card lands in each player's hand, and turns those
+          counts into probabilities.
+        </p>
+        <p>
+          Run it with different cards and player counts and each player's chance of holding any specific card is always
+          about <strong>13%</strong> (7 of 54 cards). Every card is equally likely to be dealt. Adding players raises the
+          chance that <em>someone</em> has it, because more cards get dealt. With seven cards each, a single deck runs out
+          during the 8th player's hand, so the 8th player's chance drops and players 9 and up have 0%. For the best game,
+          play with around five people per deck.
+        </p>
+
+        <h4>Psychology</h4>
+        <p>
+          To win more often, watch how other players act and talk, not just the cards, especially early on. In a typical
+          five-player game, expect at least one player (maybe you) to start with face cards. Most players dump their
+          highest cards first, because it lowers their score without forcing extra draws.
+        </p>
+        <p>
+          Early in the game, it helps to match the pace the others set. As face cards leave the table, everyone shifts to
+          lower cards, and staying in rhythm keeps your hand comparable to theirs. Sometimes slowing down pays off, though:
+          choosing between the last played card and the pile can be a low-risk move at the right moment.
+        </p>
+        <p>
+          Once face cards stop coming, most players are probably holding mid-range cards, roughly 4s through 8s. This is
+          when holding several cards of the same rank becomes powerful. For example, holding multiple 10s early looks bad,
+          but when someone plays a 10 later, you can dump them all at once and jump ahead.
+        </p>
+        <p>
+          Human behavior helps too. Researcher John Demartini explains that people naturally act first on what they think
+          matters most. In this game, that's why so many players lead with their highest cards, and knowing that lets you
+          predict their moves. Breaking the pattern by leading with mid-range cards is a bit risky and may end up similar
+          in points, but it can unsettle opponents. Faced with an unexpected strategy, people get unsure or overconfident
+          and make rushed decisions.
+        </p>
+        <p>
+          Watch what people say, too. Research discussed by Harvard Business School and reported in Forbes suggests that
+          people who are lying often talk more than necessary to sound convincing. If someone announces halfway through a
+          round that they "only have face cards," be suspicious: that's a bad hand, not one most people would advertise.
+          Once you catch a player exaggerating, don't fully trust what they say afterward.
+        </p>
+
+        <h4>Final verdict</h4>
+        <p>
+          Numbers don't lie, but people do. Use the odds to decide when to draw and when to take, and remember that if
+          lots of face cards have been played, few are left in the pile. Beyond that, it depends on the other players.
+          You can only control yourself, so combine smart card play with a good read on your opponents.
+        </p>
+        <p class="punchline">These strategies are theoretical and haven't been tested in real games. They can improve your odds, but they can't guarantee a win.</p>
+      </div>
+    </details>
   </section>
 
   <section id="awards">
@@ -527,7 +847,7 @@
 
   const reduceMotion = window.matchMedia('(prefers-reduced-motion: reduce)').matches;
 
-  
+  // Typing effect for "$ whoami"
   const typed = document.getElementById('typed');
   if (typed && !reduceMotion) {
     const text = typed.dataset.text;
@@ -539,7 +859,7 @@
     }, 300);
   }
 
-
+  // Fade cards and headings in as you scroll
   if ('IntersectionObserver' in window && !reduceMotion) {
     const items = document.querySelectorAll('section h2, section .card, .skills, .resume-actions, .resume-frame, .section-intro');
     const io = new IntersectionObserver((entries) => {
