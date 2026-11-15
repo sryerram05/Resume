@@ -1,0 +1,496 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width, initial-scale=1.0, maximum-scale=1.0, user-scalable=no">
+<title>Sky Hop · Siddarth Yerram</title>
+<link rel="preconnect" href="https://fonts.googleapis.com">
+<link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
+<link href="https://fonts.googleapis.com/css2?family=JetBrains+Mono:wght@400;600&family=Inter:wght@400;500;600&display=swap" rel="stylesheet">
+<style>
+  :root {
+    --bg: #0d1117; --panel: #161b22; --border: #30363d; --text: #e6edf3;
+    --muted: #8b949e; --accent: #3fb950; --accent-2: #58a6ff;
+    --mono: 'JetBrains Mono', ui-monospace, monospace;
+    --sans: 'Inter', system-ui, -apple-system, sans-serif;
+  }
+  * { box-sizing: border-box; margin: 0; padding: 0; }
+  html, body { height: 100%; }
+  body {
+    background: var(--bg); color: var(--text); font-family: var(--sans);
+    display: flex; flex-direction: column; align-items: center;
+    overscroll-behavior: none;
+  }
+  header {
+    width: 100%; max-width: 920px; padding: 14px 24px;
+    display: flex; justify-content: space-between; align-items: center;
+  }
+  header a { color: var(--muted); font-family: var(--mono); font-size: 14px; text-decoration: none; }
+  header a:hover { color: var(--text); }
+  header .title { font-family: var(--mono); font-weight: 600; color: var(--accent); }
+  .wrap { flex: 1; display: flex; flex-direction: column; align-items: center; justify-content: center; padding: 0 12px 16px; width: 100%; }
+  canvas {
+    display: block; border: 1px solid var(--border); border-radius: 12px;
+    background: var(--panel); touch-action: none;
+    box-shadow: 0 10px 40px rgba(0,0,0,0.45);
+  }
+  .help { font-family: var(--mono); font-size: 12.5px; color: var(--muted); margin-top: 12px; text-align: center; line-height: 1.7; }
+  .help kbd {
+    font-family: var(--mono); font-size: 11.5px; color: var(--text);
+    border: 1px solid var(--border); border-bottom-width: 2px; border-radius: 4px; padding: 0 6px; background: var(--panel);
+  }
+</style>
+</head>
+<body>
+
+<header>
+  <a href="../playground.html">← playground</a>
+  <span class="title">Sky Hop</span>
+  <a href="../index.html">home</a>
+</header>
+
+<div class="wrap">
+  <canvas id="game" width="400" height="600" aria-label="Sky Hop game"></canvas>
+  <p class="help">
+    <kbd>←</kbd> <kbd>→</kbd> or <kbd>A</kbd> <kbd>D</kbd> to move · <kbd>Space</kbd> to start / restart<br>
+    On a phone: hold the left or right side of the screen
+  </p>
+</div>
+
+<script>
+(() => {
+  const canvas = document.getElementById('game');
+  const ctx = canvas.getContext('2d');
+  const W = 400, H = 600;
+
+  // Scale the canvas to fit the screen while keeping it sharp
+  function resize() {
+    const maxH = window.innerHeight - 140;
+    const maxW = window.innerWidth - 24;
+    const scale = Math.max(0.5, Math.min(maxW / W, maxH / H, 1.4));
+    const dpr = window.devicePixelRatio || 1;
+    canvas.style.width = W * scale + 'px';
+    canvas.style.height = H * scale + 'px';
+    canvas.width = W * dpr;
+    canvas.height = H * dpr;
+    ctx.setTransform(dpr, 0, 0, dpr, 0, 0);
+  }
+  window.addEventListener('resize', resize);
+  resize();
+
+  const COLORS = {
+    bg: '#161b22', grid: 'rgba(48,54,61,0.35)', text: '#e6edf3', muted: '#8b949e',
+    green: '#3fb950', blue: '#58a6ff', orange: '#f0883e', red: '#f85149', purple: '#bc8cff'
+  };
+
+  // Physics (pixels and seconds)
+  const GRAVITY = 1500;
+  const JUMP_V = -720;
+  const SPRING_V = -1150;
+  const MOVE_SPEED = 330;
+  const P_W = 36, P_H = 36;
+  const PLAT_W = 64, PLAT_H = 12;
+
+  let best = 0;
+  try { best = parseInt(localStorage.getItem('skyHopBest') || '0', 10) || 0; } catch (e) {}
+
+  let state = 'menu';            // menu | playing | over
+  let player, platforms, particles, enemies, cameraY, score, highestY, nextEnemyY;
+  const EN_W = 34, EN_H = 26;
+  const keys = { left: false, right: false };
+  let touchDir = 0;
+
+  function rand(a, b) { return a + Math.random() * (b - a); }
+
+  // Platform types get harder as the score climbs
+  function makePlatform(y) {
+    const difficulty = Math.min(score / 5000, 1);
+    const r = Math.random();
+    let type = 'normal';
+    if (r < 0.06) type = 'spring';
+    else if (r < 0.06 + 0.10 + 0.18 * difficulty) type = 'moving';
+    else if (r < 0.06 + 0.10 + 0.18 * difficulty + 0.06 + 0.12 * difficulty) type = 'breaking';
+    return {
+      x: rand(0, W - PLAT_W), y, type,
+      vx: type === 'moving' ? (Math.random() < 0.5 ? -1 : 1) * rand(60, 110 + 90 * difficulty) : 0,
+      broken: false, fall: 0, springT: 0
+    };
+  }
+
+  function gapFor() {
+    const difficulty = Math.min(score / 5000, 1);
+    return rand(55, 80 + 45 * difficulty);
+  }
+
+  function reset() {
+    score = 0;
+    cameraY = 0;
+    player = { x: W / 2 - P_W / 2, y: H - 120, vx: 0, vy: JUMP_V, face: 1, squash: 0 };
+    highestY = player.y;
+    platforms = [{ x: W / 2 - PLAT_W / 2, y: H - 60, type: 'normal', vx: 0, broken: false, fall: 0, springT: 0 }];
+    let y = H - 60;
+    while (y > -H) {
+      y -= gapFor();
+      platforms.push(makePlatform(y));
+    }
+    particles = [];
+    enemies = [];
+    nextEnemyY = -900;   // first enemy appears a little way up
+  }
+
+  function burst(x, y, color, n = 8) {
+    for (let i = 0; i < n; i++) {
+      particles.push({ x, y, vx: rand(-120, 120), vy: rand(-180, -40), life: rand(0.3, 0.6), color });
+    }
+  }
+
+  function start() { reset(); state = 'playing'; }
+
+  function update(dt) {
+    // Horizontal movement
+    let dir = player.dead ? 0 : ((keys.right ? 1 : 0) - (keys.left ? 1 : 0) || touchDir);
+    const target = dir * MOVE_SPEED;
+    player.vx += (target - player.vx) * Math.min(1, dt * 12);
+    if (dir) player.face = dir;
+    player.x += player.vx * dt;
+
+    // Wrap around the screen edges
+    if (player.x + P_W / 2 < 0) player.x += W;
+    if (player.x + P_W / 2 > W) player.x -= W;
+
+    // Vertical movement
+    const prevBottom = player.y + P_H;
+    player.vy += GRAVITY * dt;
+    player.y += player.vy * dt;
+    player.squash = Math.max(0, player.squash - dt * 4);
+
+    // Landing on platforms (only while falling)
+    if (player.vy > 0 && !player.dead) {
+      for (const p of platforms) {
+        if (p.broken) continue;
+        const bottom = player.y + P_H;
+        const overlapX = player.x + P_W - 6 > p.x && player.x + 6 < p.x + PLAT_W;
+        if (overlapX && prevBottom <= p.y + 2 && bottom >= p.y) {
+          player.y = p.y - P_H;
+          if (p.type === 'breaking') {
+            // One bounce, then it crumbles
+            p.broken = true;
+            burst(p.x + PLAT_W / 2, p.y, COLORS.orange, 10);
+          }
+          if (p.type === 'spring') {
+            player.vy = SPRING_V;
+            p.springT = 0.25;
+            burst(player.x + P_W / 2, p.y, COLORS.purple, 12);
+          } else {
+            player.vy = JUMP_V;
+            burst(player.x + P_W / 2, p.y, COLORS.green, 5);
+          }
+          player.squash = 1;
+          break;
+        }
+      }
+    }
+
+    // Platforms: moving and falling
+    for (const p of platforms) {
+      if (p.type === 'moving' && !p.broken) {
+        p.x += p.vx * dt;
+        if (p.x < 0) { p.x = 0; p.vx *= -1; }
+        if (p.x + PLAT_W > W) { p.x = W - PLAT_W; p.vx *= -1; }
+      }
+      if (p.broken) { p.fall += 900 * dt; p.y += p.fall * dt; }
+      if (p.springT > 0) p.springT -= dt;
+    }
+
+    // Enemies patrol left and right
+    for (const e of enemies) {
+      if (e.dead) { e.fall += 1200 * dt; e.y += e.fall * dt; e.spin += dt * 10; continue; }
+      e.x += e.vx * dt;
+      if (e.x < 0) { e.x = 0; e.vx *= -1; }
+      if (e.x + EN_W > W) { e.x = W - EN_W; e.vx *= -1; }
+      e.bob += dt * 6;
+
+      if (player.dead) continue;
+      const hit = player.x + P_W - 4 > e.x && player.x + 4 < e.x + EN_W &&
+                  player.y + P_H > e.y + 2 && player.y < e.y + EN_H - 2;
+      if (hit) {
+        if (player.vy > 0 && prevBottom <= e.y + 10) {
+          // Stomped from above
+          e.dead = true;
+          player.vy = JUMP_V;
+          player.squash = 1;
+          burst(e.x + EN_W / 2, e.y, COLORS.red, 14);
+        } else {
+          // Touched from the side or below: knocked out
+          player.dead = true;
+          player.vy = -250;
+          burst(player.x + P_W / 2, player.y + P_H / 2, COLORS.red, 16);
+        }
+      }
+    }
+
+    // Camera follows the player upward
+    const camLine = cameraY + H * 0.4;
+    if (player.y < camLine && !player.dead) cameraY = player.y - H * 0.4;
+
+    // Score is the highest point reached
+    if (player.y < highestY) highestY = player.y;
+    score = Math.max(score, Math.floor((H - 120 - highestY) / 3));
+
+    // Spawn new platforms above, drop old ones below
+    let topY = Math.min(...platforms.map(p => p.y));
+    while (topY > cameraY - 80) {
+      topY -= gapFor();
+      platforms.push(makePlatform(topY));
+      if (topY < nextEnemyY) {
+        const difficulty = Math.min(score / 6000, 1);
+        const ey = topY - rand(25, 35);
+        enemies.push({
+          x: rand(0, W - EN_W), y: ey - EN_H,
+          vx: (Math.random() < 0.5 ? -1 : 1) * rand(70, 110 + 110 * difficulty),
+          dead: false, fall: 0, spin: 0, bob: Math.random() * 6
+        });
+        // Enemies get more frequent the higher you go
+        nextEnemyY = topY - rand(700 - 380 * difficulty, 1100 - 550 * difficulty);
+      }
+    }
+    platforms = platforms.filter(p => p.y < cameraY + H + 60);
+    enemies = enemies.filter(e => e.y < cameraY + H + 80);
+
+    // Particles
+    for (const pt of particles) {
+      pt.vy += 600 * dt; pt.x += pt.vx * dt; pt.y += pt.vy * dt; pt.life -= dt;
+    }
+    particles = particles.filter(pt => pt.life > 0);
+
+    // Game over when falling below the screen
+    if (player.y > cameraY + H + 40) {
+      state = 'over';
+      if (score > best) {
+        best = score;
+        try { localStorage.setItem('skyHopBest', String(best)); } catch (e) {}
+      }
+    }
+  }
+
+  // ---------- Drawing ----------
+  function roundRect(x, y, w, h, r) {
+    ctx.beginPath();
+    ctx.moveTo(x + r, y);
+    ctx.arcTo(x + w, y, x + w, y + h, r);
+    ctx.arcTo(x + w, y + h, x, y + h, r);
+    ctx.arcTo(x, y + h, x, y, r);
+    ctx.arcTo(x, y, x + w, y, r);
+    ctx.closePath();
+  }
+
+  // Stars at three depths for a parallax night sky
+  const stars = Array.from({ length: 90 }, () => ({
+    x: Math.random() * W, y: Math.random() * H,
+    depth: [0.15, 0.3, 0.5][Math.floor(Math.random() * 3)],
+    r: Math.random() * 1.4 + 0.4, tw: Math.random() * Math.PI * 2
+  }));
+
+  function drawBackground() {
+    // Sky gets deeper blue the higher you climb
+    const t = Math.min(1, -cameraY / 12000);
+    const top = `rgb(${Math.round(22 - 12 * t)}, ${Math.round(32 - 20 * t)}, ${Math.round(62 - 30 * t)})`;
+    const bottom = `rgb(${Math.round(40 - 25 * t)}, ${Math.round(52 - 32 * t)}, ${Math.round(92 - 50 * t)})`;
+    const g = ctx.createLinearGradient(0, 0, 0, H);
+    g.addColorStop(0, top);
+    g.addColorStop(1, bottom);
+    ctx.fillStyle = g;
+    ctx.fillRect(0, 0, W, H);
+
+    const now = performance.now() / 1000;
+    for (const s of stars) {
+      const y = (((s.y - cameraY * s.depth) % H) + H) % H;
+      ctx.globalAlpha = 0.45 + 0.4 * Math.sin(now * 2 + s.tw);
+      ctx.fillStyle = '#ffffff';
+      ctx.beginPath(); ctx.arc(s.x, y, s.r, 0, Math.PI * 2); ctx.fill();
+    }
+    ctx.globalAlpha = 1;
+  }
+
+  function drawPlatform(p) {
+    const y = p.y - cameraY;
+    const colors = { normal: COLORS.green, moving: COLORS.blue, breaking: COLORS.orange, spring: COLORS.green };
+    ctx.save();
+    if (p.broken) ctx.globalAlpha = Math.max(0, 1 - p.fall / 900);
+    ctx.fillStyle = colors[p.type];
+    ctx.shadowColor = colors[p.type];
+    ctx.shadowBlur = 10;
+    if (p.type === 'breaking') {
+      // Cracked platform drawn as two halves
+      const gap = p.broken ? Math.min(14, p.fall / 40) : 2;
+      roundRect(p.x, y, PLAT_W / 2 - gap / 2, PLAT_H, 5); ctx.fill();
+      roundRect(p.x + PLAT_W / 2 + gap / 2, y, PLAT_W / 2 - gap / 2, PLAT_H, 5); ctx.fill();
+    } else {
+      roundRect(p.x, y, PLAT_W, PLAT_H, 5); ctx.fill();
+    }
+    ctx.shadowBlur = 0;
+    if (p.type === 'spring') {
+      const sx = p.x + PLAT_W / 2 - 8;
+      const ext = p.springT > 0 ? 14 : 8;
+      ctx.strokeStyle = COLORS.purple; ctx.lineWidth = 3;
+      ctx.beginPath();
+      ctx.moveTo(sx, y);
+      for (let i = 1; i <= 4; i++) ctx.lineTo(sx + (i % 2 ? 16 : 0), y - (ext / 4) * i);
+      ctx.stroke();
+      ctx.fillStyle = COLORS.purple;
+      roundRect(sx - 2, y - ext - 4, 20, 4, 2); ctx.fill();
+    }
+    ctx.restore();
+  }
+
+  // The player: a plain green square
+  function drawPlayer() {
+    const sq = player.squash;
+    const w = P_W * (1 + 0.18 * sq), h = P_H * (1 - 0.18 * sq);
+    const x = player.x + (P_W - w) / 2;
+    const y = player.y - cameraY + (P_H - h);
+    const drawAt = (dx) => {
+      ctx.fillStyle = player.dead ? '#8b949e' : COLORS.green;
+      ctx.fillRect(x + dx, y, w, h);
+    };
+    drawAt(0);
+    // Draw a copy on the other side while wrapping across the edge
+    if (player.x < 0) drawAt(W);
+    if (player.x + P_W > W) drawAt(-W);
+  }
+
+  // Enemy: a red spiky ball
+  function drawEnemy(e) {
+    const cx = e.x + EN_W / 2;
+    const cy = e.y - cameraY + EN_H / 2 + (e.dead ? 0 : Math.sin(e.bob) * 2);
+    ctx.save();
+    ctx.translate(cx, cy);
+    ctx.rotate(e.dead ? e.spin : e.bob * 0.5 * Math.sign(e.vx));
+    if (e.dead) ctx.globalAlpha = 0.8;
+    // spikes
+    ctx.fillStyle = '#da3633';
+    for (let i = 0; i < 8; i++) {
+      const a = (i / 8) * Math.PI * 2;
+      ctx.beginPath();
+      ctx.moveTo(Math.cos(a) * 17, Math.sin(a) * 17);
+      ctx.lineTo(Math.cos(a + 0.35) * 11, Math.sin(a + 0.35) * 11);
+      ctx.lineTo(Math.cos(a - 0.35) * 11, Math.sin(a - 0.35) * 11);
+      ctx.closePath(); ctx.fill();
+    }
+    // body
+    ctx.fillStyle = COLORS.red;
+    ctx.beginPath(); ctx.arc(0, 0, 12, 0, Math.PI * 2); ctx.fill();
+    ctx.restore();
+  }
+
+  function drawParticles() {
+    for (const pt of particles) {
+      ctx.globalAlpha = Math.max(0, pt.life / 0.6);
+      ctx.fillStyle = pt.color;
+      ctx.beginPath(); ctx.arc(pt.x, pt.y - cameraY, 2.2, 0, Math.PI * 2); ctx.fill();
+    }
+    ctx.globalAlpha = 1;
+  }
+
+  function drawHUD() {
+    ctx.fillStyle = 'rgba(13,17,23,0.75)';
+    roundRect(10, 10, 130, 34, 8); ctx.fill();
+    ctx.fillStyle = COLORS.green;
+    ctx.font = '600 15px "Inter", sans-serif';
+    ctx.textAlign = 'left'; ctx.textBaseline = 'middle';
+    ctx.fillText('Score: ' + score, 22, 28);
+    ctx.fillStyle = COLORS.muted;
+    ctx.font = '12px "Inter", sans-serif';
+    ctx.textAlign = 'right';
+    ctx.fillText('Best: ' + Math.max(best, score), W - 14, 28);
+  }
+
+  function drawOverlay(title, lines, prompt) {
+    ctx.fillStyle = 'rgba(13,17,23,0.78)';
+    ctx.fillRect(0, 0, W, H);
+    ctx.textAlign = 'center'; ctx.textBaseline = 'middle';
+    ctx.fillStyle = COLORS.green;
+    ctx.font = '600 30px "Inter", sans-serif';
+    ctx.fillText(title, W / 2, H / 2 - 80);
+    ctx.font = '14px "Inter", sans-serif';
+    lines.forEach((l, i) => {
+      ctx.fillStyle = l.color || COLORS.text;
+      ctx.fillText(l.text, W / 2, H / 2 - 30 + i * 24);
+    });
+    const blink = Math.floor(performance.now() / 500) % 2 === 0;
+    if (blink) {
+      ctx.fillStyle = COLORS.blue;
+      ctx.font = '600 14px "Inter", sans-serif';
+      ctx.fillText(prompt, W / 2, H / 2 + 135);
+    }
+  }
+
+  function draw() {
+    drawBackground();
+    for (const p of platforms) drawPlatform(p);
+    for (const e of enemies) drawEnemy(e);
+    drawParticles();
+    if (state !== 'menu') drawPlayer();
+    drawHUD();
+
+    if (state === 'menu') {
+      drawOverlay('SKY HOP', [
+        { text: 'Bounce as high as you can.' },
+        { text: 'Green: solid', color: COLORS.green },
+        { text: 'Blue: moving', color: COLORS.blue },
+        { text: 'Orange: one bounce, then it breaks', color: COLORS.orange },
+        { text: 'Spring: super jump', color: COLORS.purple },
+        { text: 'Red enemies: avoid them or stomp on them', color: COLORS.red }
+      ], 'Press space or tap to start');
+    } else if (state === 'over') {
+      drawOverlay('GAME OVER', [
+        { text: 'Score: ' + score },
+        { text: 'Best: ' + best, color: COLORS.muted },
+        { text: score >= best && score > 0 ? '★ new high score ★' : '', color: COLORS.orange }
+      ], 'Press space or tap to play again');
+    }
+  }
+
+  // ---------- Main loop ----------
+  let last = performance.now();
+  function loop(now) {
+    const dt = Math.min(0.033, (now - last) / 1000);
+    last = now;
+    if (state === 'playing') update(dt);
+    draw();
+    requestAnimationFrame(loop);
+  }
+
+  // ---------- Input ----------
+  window.addEventListener('keydown', (e) => {
+    if (['ArrowLeft', 'ArrowRight', 'ArrowUp', 'ArrowDown', ' '].includes(e.key)) e.preventDefault();
+    if (e.key === 'ArrowLeft' || e.key === 'a' || e.key === 'A') keys.left = true;
+    if (e.key === 'ArrowRight' || e.key === 'd' || e.key === 'D') keys.right = true;
+    if ((e.key === ' ' || e.key === 'Enter') && state !== 'playing') start();
+  });
+  window.addEventListener('keyup', (e) => {
+    if (e.key === 'ArrowLeft' || e.key === 'a' || e.key === 'A') keys.left = false;
+    if (e.key === 'ArrowRight' || e.key === 'd' || e.key === 'D') keys.right = false;
+  });
+
+  function pointerDir(e) {
+    const rect = canvas.getBoundingClientRect();
+    return (e.clientX - rect.left) < rect.width / 2 ? -1 : 1;
+  }
+  canvas.addEventListener('pointerdown', (e) => {
+    e.preventDefault();
+    if (state !== 'playing') { start(); return; }
+    touchDir = pointerDir(e);
+    canvas.setPointerCapture(e.pointerId);
+  });
+  canvas.addEventListener('pointermove', (e) => { if (touchDir) touchDir = pointerDir(e); });
+  const stopTouch = () => { touchDir = 0; };
+  canvas.addEventListener('pointerup', stopTouch);
+  canvas.addEventListener('pointercancel', stopTouch);
+
+  reset();
+  requestAnimationFrame(loop);
+})();
+</script>
+</body>
+</html>
