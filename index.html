@@ -102,6 +102,50 @@
 
   .hobby-icon { font-size: 26px; margin-bottom: 8px; }
 
+  /* ---- What If? section ---- */
+  .section-intro { color: var(--muted); font-size: 15px; margin: -10px 0 20px; max-width: 680px; }
+  details.whatif { padding: 0; overflow: hidden; }
+  details.whatif summary {
+    list-style: none; cursor: pointer; padding: 20px 24px;
+    display: flex; justify-content: space-between; align-items: center; gap: 16px;
+  }
+  details.whatif summary::-webkit-details-marker { display: none; }
+  details.whatif summary h3 { font-size: 1.1rem; }
+  details.whatif summary .toggle {
+    font-family: var(--mono); font-size: 12px; color: var(--accent);
+    border: 1px solid rgba(63,185,80,0.5); border-radius: 999px; padding: 2px 10px; white-space: nowrap;
+  }
+  details.whatif[open] summary .toggle::after { content: ' −'; }
+  details.whatif:not([open]) summary .toggle::after { content: ' +'; }
+  details.whatif[open] summary { border-bottom: 1px solid var(--border); }
+  details.whatif summary:hover h3 { color: var(--accent); }
+  .whatif-body { padding: 8px 24px 24px; }
+  .whatif-body h4 {
+    font-family: var(--mono); font-size: 13px; color: var(--accent-2);
+    margin: 22px 0 8px; text-transform: uppercase; letter-spacing: 0.06em;
+  }
+  .whatif-body p { margin: 10px 0; }
+  .tldr {
+    border-left: 3px solid var(--accent); background: rgba(63,185,80,0.07);
+    padding: 10px 14px; border-radius: 0 6px 6px 0; margin: 14px 0 4px;
+  }
+  .eq {
+    font-family: var(--mono); font-size: 15px; color: var(--text);
+    background: var(--bg); border: 1px solid var(--border); border-radius: 6px;
+    padding: 10px 14px; margin: 10px 0; overflow-x: auto; white-space: nowrap;
+  }
+  .eq .frac { display: inline-flex; flex-direction: column; vertical-align: middle; text-align: center; margin: 0 4px; }
+  .eq .frac span:first-child { border-bottom: 1px solid var(--muted); padding: 0 4px; }
+  .eq .frac span:last-child { padding: 0 4px; }
+  .vars { font-family: var(--mono); font-size: 13px; color: var(--muted); margin: 6px 0 12px; padding-left: 4px; }
+  .vars div { margin: 2px 0; }
+  .result { color: var(--accent); font-weight: 600; }
+  .stat-row { display: grid; grid-template-columns: repeat(auto-fit, minmax(150px, 1fr)); gap: 10px; margin: 16px 0; }
+  .stat { background: var(--bg); border: 1px solid var(--border); border-radius: 8px; padding: 12px 14px; }
+  .stat .num { font-family: var(--mono); font-size: 18px; font-weight: 600; color: var(--text); }
+  .stat .lbl { font-size: 12.5px; color: var(--muted); }
+  .punchline { font-weight: 600; color: var(--text) !important; margin-top: 18px !important; }
+
   footer {
     border-top: 1px solid var(--border); margin-top: 64px; padding: 28px 0;
     font-family: var(--mono); font-size: 12.5px; color: var(--muted); text-align: center;
@@ -125,6 +169,7 @@
       <li><a href="#experience">experience</a></li>
       <li><a href="#skills">skills</a></li>
       <li><a href="#hobbies">hobbies</a></li>
+      <li><a href="#what-if">what-if</a></li>
       <li><a href="playground.html">playground</a></li>
     </ul>
   </div>
@@ -146,8 +191,8 @@
       <a class="btn" href="https://ieeexplore.ieee.org/author/592795299827978" target="_blank" rel="noopener">IEEE Author Page</a>
       <a class="btn" href="https://www.instagram.com/sid.darthvader05" target="_blank" rel="noopener">Instagram</a>
       <a class="btn" href="https://discordapp.com/users/1180978650544341022" target="_blank" rel="noopener">Discord</a>
-      
-      
+
+
       <!-- <a class="btn" href="https://github.com/YOUR-USERNAME" target="_blank" rel="noopener">GitHub</a> -->
     </div>
   </header>
@@ -217,7 +262,7 @@
         <h3>Project 1500+</h3>
         <p class="meta">Personal Project</p>
         <p>
-          Essentially takes all the College Board English SAT Questions and answers and make a single applciaiton that can be used to practice and learn. Not affiliated with College Board. 
+          Essentially takes all the College Board English SAT Questions and answers and make a single applciaiton that can be used to practice and learn. Not affiliated with College Board.
           The GitHub will not work due to the fact that the questions are copyrighted and cannot be shared. However, screenshots of the program working are avalible in the imgs folder.
           The program uses Swift in Xcode and has a personal AI to analyze mistakes and generate focus points.
         </p>
@@ -316,6 +361,77 @@
         <p>Solving sudoku puzzles, Rubik's Cube and other brain teasers.</p>
       </div>
     </div>
+  </section>
+
+  <section id="what-if">
+    <h2>What If?</h2>
+    <p class="section-intro">Bizarre scenarios, answered with real physics. Click a question to see the math.</p>
+
+    <!-- To add a new scenario, copy one <details class="card whatif"> ... </details> block below. -->
+    <details class="card whatif">
+      <summary>
+        <h3>What if a 5-meter-radius black hole spawned in your bedroom?</h3>
+        <span class="toggle">math</span>
+      </summary>
+      <div class="whatif-body">
+        <p class="tldr"><strong>Short answer:</strong> you would never get to see it. The Earth would be destroyed almost instantly, and the Moon would fall in a few hours later.</p>
+
+        <h4>Step 1: How heavy is it?</h4>
+        <p>To find the black hole's mass, start with the escape-velocity relation:</p>
+        <div class="eq">M = <span class="frac"><span>r v<sup>2</sup></span><span>2G</span></span></div>
+        <div class="vars">
+          <div>r = 5 m (radius of the event horizon)</div>
+          <div>G = 6.674 × 10<sup>−11</sup> m<sup>3</sup>/(kg·s<sup>2</sup>)</div>
+          <div>v = escape velocity</div>
+        </div>
+        <p>
+          First, a fun detour. Suppose you are standing 5 feet (1.524 m) from the event horizon. Using
+          <span style="font-family:var(--mono)">v = c·√(R / 2r)</span> with R = 5 m gives a speed of
+          <strong>383,970,822 m/s</strong>, which is faster than light. Einstein's relativity says that's impossible,
+          so the most nature allows is <strong>v = c</strong>. That also matches the definition of an event horizon:
+          the place where escape velocity equals the speed of light.
+        </p>
+        <p>Plugging in c = 299,792,458 m/s:</p>
+        <div class="eq">M = <span class="frac"><span>5 × (299,792,458)<sup>2</sup></span><span>2 × 6.674 × 10<sup>−11</sup></span></span> ≈ <span class="result">3.37 × 10<sup>27</sup> kg</span></div>
+        <p>That's 3,370,000,000,000,000,000,000,000,000 kg.</p>
+        <div class="stat-row">
+          <div class="stat"><div class="num">≈ 564×</div><div class="lbl">the mass of Earth (5.97 × 10<sup>24</sup> kg)</div></div>
+          <div class="stat"><div class="num">≈ 1.78×</div><div class="lbl">the mass of Jupiter</div></div>
+          <div class="stat"><div class="num">≈ 0.17%</div><div class="lbl">the mass of the Sun</div></div>
+        </div>
+
+        <h4>Step 2: The Earth</h4>
+        <p>
+          Something more than 500 times heavier than the Earth is now sitting inside it. The planet gets crushed
+          and pulled into the black hole.
+        </p>
+
+        <h4>Step 3: The Moon</h4>
+        <p>Newton's Law of Universal Gravitation gives the pull on the Moon:</p>
+        <div class="eq">F = <span class="frac"><span>G m M</span><span>r<sup>2</sup></span></span></div>
+        <div class="vars">
+          <div>m = 7.35 × 10<sup>22</sup> kg (Moon)</div>
+          <div>r ≈ 384,400 km (Earth–Moon distance)</div>
+        </div>
+        <p>That works out to <span class="result">F ≈ 1.12 × 10<sup>23</sup> N</span>. Using Newton's Second Law:</p>
+        <div class="eq">a = <span class="frac"><span>F</span><span>m</span></span> ≈ <span class="result">1.52 m/s<sup>2</sup></span></div>
+        <p>That's the Moon's acceleration toward the black hole at t = 0, about 560 times stronger than the pull Earth used to have on it.</p>
+        <p>
+          The Moon's orbital speed (about 1 km/s) is tiny compared with the roughly 24 km/s it would now need to stay
+          in orbit, so it falls almost straight in. The free-fall time from astrophysics is:
+        </p>
+        <div class="eq">t = <span class="frac"><span>π</span><span>2</span></span> √<span style="border-top:1px solid var(--muted);padding:0 4px"><span class="frac"><span>r<sup>3</sup></span><span>2GM</span></span></span> ≈ <span class="result">17,700 s ≈ 4.9 hours</span></div>
+        <p>So the Moon lasts about five hours. In reality, tidal forces would rip it apart before it reached the horizon.</p>
+
+        <h4>The big picture</h4>
+        <p>
+          The Sun is still almost 600 times heavier than the black hole, so it stays the anchor of the solar system.
+          The black hole simply takes over Earth's orbit around the Sun. Venus and Mars would feel small nudges to
+          their orbits, and the outer planets would barely notice.
+        </p>
+        <p class="punchline">Safe to say, you will not be going to school tomorrow.</p>
+      </div>
+    </details>
   </section>
 
   <section id="awards">
