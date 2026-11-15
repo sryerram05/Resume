@@ -321,6 +321,16 @@
         <p style="margin-top:14px"><a href="https://github.com/sryerram05/proj-1500" target="_blank" rel="noopener">Go to GitHub Repo →</a></p>
       </div>
 
+        <div class="card">
+        <h3>Memory Game</h3>
+        <p class="meta">Personal Project</p>
+        <p>
+          Game I made a long time ago that is a simple memory game where you have to match pairs of cards. The game has a timer and a score system. The game is created using HTML, CSS, and JavaScript. 
+        </p>
+        <div class="tags"><span class="tag">HTML</span><span class="tag">CSS</span><span class="tag">JavaScript</span></div>
+        <p style="margin-top:14px"><a href="https://github.com/sryerram05/memory-game" target="_blank" rel="noopener">Go to GitHub Repo →</a></p>
+      </div>
+
     </div>
 
     <p style="margin-top:20px; font-family:var(--mono); font-size:14px; color:var(--muted)">
@@ -517,7 +527,7 @@
 
   const reduceMotion = window.matchMedia('(prefers-reduced-motion: reduce)').matches;
 
-  // Typing effect for "$ whoami"
+  
   const typed = document.getElementById('typed');
   if (typed && !reduceMotion) {
     const text = typed.dataset.text;
@@ -529,7 +539,7 @@
     }, 300);
   }
 
-  // Fade cards and headings in as you scroll
+
   if ('IntersectionObserver' in window && !reduceMotion) {
     const items = document.querySelectorAll('section h2, section .card, .skills, .resume-actions, .resume-frame, .section-intro');
     const io = new IntersectionObserver((entries) => {
