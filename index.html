@@ -1,0 +1,316 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width, initial-scale=1.0">
+<title>Siddarth Reddy Yerram — Developer &amp; AI/ML Researcher</title>
+<meta name="description" content="Siddarth Reddy Yerram — self-taught developer, published deep learning researcher, and data analyst.">
+<link rel="preconnect" href="https://fonts.googleapis.com">
+<link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
+<link href="https://fonts.googleapis.com/css2?family=JetBrains+Mono:wght@400;600&family=Inter:wght@400;500;600;700&display=swap" rel="stylesheet">
+<style>
+  :root {
+    --bg: #0d1117;
+    --panel: #161b22;
+    --border: #30363d;
+    --text: #e6edf3;
+    --muted: #8b949e;
+    --accent: #3fb950;
+    --accent-2: #58a6ff;
+    --mono: 'JetBrains Mono', ui-monospace, monospace;
+    --sans: 'Inter', system-ui, -apple-system, sans-serif;
+  }
+  * { box-sizing: border-box; margin: 0; padding: 0; }
+  html { scroll-behavior: smooth; }
+  body { background: var(--bg); color: var(--text); font-family: var(--sans); line-height: 1.6; }
+  a { color: var(--accent-2); text-decoration: none; }
+  a:hover { text-decoration: underline; }
+
+  nav {
+    position: sticky; top: 0; z-index: 10;
+    background: rgba(13,17,23,0.9); backdrop-filter: blur(8px);
+    border-bottom: 1px solid var(--border);
+  }
+  nav .inner {
+    max-width: 920px; margin: 0 auto; padding: 14px 24px;
+    display: flex; justify-content: space-between; align-items: center; gap: 16px; flex-wrap: wrap;
+  }
+  nav .logo { font-family: var(--mono); font-weight: 600; color: var(--accent); }
+  nav ul { list-style: none; display: flex; gap: 20px; flex-wrap: wrap; }
+  nav ul a { color: var(--muted); font-size: 14px; font-family: var(--mono); }
+  nav ul a:hover { color: var(--text); text-decoration: none; }
+
+  main { max-width: 920px; margin: 0 auto; padding: 0 24px 80px; }
+
+  header.hero { padding: 80px 0 56px; border-bottom: 1px solid var(--border); }
+  .prompt { font-family: var(--mono); color: var(--muted); font-size: 14px; margin-bottom: 12px; }
+  .prompt span { color: var(--accent); }
+  h1 { font-size: clamp(2.2rem, 5vw, 3.4rem); line-height: 1.1; letter-spacing: -0.02em; }
+  .tagline { font-size: 1.15rem; color: var(--muted); margin-top: 14px; max-width: 640px; }
+  .tagline strong { color: var(--text); font-weight: 500; }
+  .links { display: flex; flex-wrap: wrap; gap: 10px; margin-top: 28px; }
+  .btn {
+    font-family: var(--mono); font-size: 13px; padding: 8px 14px;
+    border: 1px solid var(--border); border-radius: 6px; color: var(--text); background: var(--panel);
+  }
+  .btn:hover { border-color: var(--accent); text-decoration: none; }
+  .btn.primary { background: var(--accent); border-color: var(--accent); color: #0d1117; font-weight: 600; }
+
+  section { padding: 56px 0 8px; }
+  h2 {
+    font-family: var(--mono); font-size: 14px; text-transform: uppercase; letter-spacing: 0.12em;
+    color: var(--accent); margin-bottom: 24px;
+  }
+  h2::before { content: '## '; color: var(--muted); }
+
+  .card {
+    background: var(--panel); border: 1px solid var(--border); border-radius: 10px;
+    padding: 22px 24px; margin-bottom: 16px;
+  }
+  .card h3 { font-size: 1.1rem; font-weight: 600; }
+  .meta { font-family: var(--mono); font-size: 12.5px; color: var(--muted); margin: 4px 0 10px; }
+  .card p, .card li { color: #c9d1d9; font-size: 15px; }
+  .card ul { padding-left: 18px; }
+  .card li { margin: 4px 0; }
+
+  .featured { border-color: rgba(63,185,80,0.5); }
+  .badge {
+    display: inline-block; font-family: var(--mono); font-size: 11px; font-weight: 600;
+    color: var(--accent); border: 1px solid rgba(63,185,80,0.5); border-radius: 999px;
+    padding: 2px 10px; margin-bottom: 10px;
+  }
+
+  .grid { display: grid; grid-template-columns: repeat(auto-fit, minmax(260px, 1fr)); gap: 16px; }
+  .grid .card { margin-bottom: 0; display: flex; flex-direction: column; }
+  .grid .card p:not(.meta) { flex: 1; }
+  .grid.two { grid-template-columns: repeat(auto-fit, minmax(320px, 1fr)); }
+  .tags { display: flex; flex-wrap: wrap; gap: 6px; margin-top: 14px; }
+  .tag {
+    font-family: var(--mono); font-size: 11.5px; color: var(--accent-2);
+    background: rgba(88,166,255,0.1); border-radius: 4px; padding: 2px 8px;
+  }
+
+  .row { display: flex; justify-content: space-between; gap: 12px; flex-wrap: wrap; align-items: baseline; }
+
+  .skills { display: grid; grid-template-columns: 180px 1fr; gap: 14px 24px; }
+  .skills dt { font-family: var(--mono); font-size: 13px; color: var(--muted); padding-top: 3px; }
+  .skills dd { display: flex; flex-wrap: wrap; gap: 8px; }
+  .chip {
+    font-family: var(--mono); font-size: 13px; padding: 4px 10px;
+    border: 1px solid var(--border); border-radius: 6px; background: var(--panel);
+  }
+
+  .hobby-icon { font-size: 26px; margin-bottom: 8px; }
+
+  footer {
+    border-top: 1px solid var(--border); margin-top: 64px; padding: 28px 0;
+    font-family: var(--mono); font-size: 12.5px; color: var(--muted); text-align: center;
+  }
+
+  @media (max-width: 600px) {
+    .skills { grid-template-columns: 1fr; gap: 6px; }
+    .skills dd { margin-bottom: 12px; }
+    nav ul { gap: 14px; }
+  }
+</style>
+</head>
+<body>
+
+<nav>
+  <div class="inner">
+    <span class="logo">~/siddarth</span>
+    <ul>
+      <li><a href="#about">about</a></li>
+      <li><a href="#projects">projects</a></li>
+      <li><a href="#experience">experience</a></li>
+      <li><a href="#skills">skills</a></li>
+      <li><a href="#hobbies">hobbies</a></li>
+    </ul>
+  </div>
+</nav>
+
+<main>
+
+  <header class="hero" id="about">
+    <p class="prompt"><span>$</span> whoami</p>
+    <h1>Siddarth Reddy Yerram</h1>
+    <p class="tagline">
+      <strong>Developer &amp; AI/ML researcher.</strong> Self-taught programmer with a published IEEE paper on deep learning
+      for mathematical pattern recognition, two years of hands-on data-analysis work, and a habit of teaching
+      other kids to code along the way.
+    </p>
+    <div class="links">
+      <a class="btn primary" href="mailto:sryerram05@gmail.com">Email me</a>
+      <a class="btn" href="https://www.linkedin.com/in/siddarthreddy-yerram-ba6362379" target="_blank" rel="noopener">LinkedIn</a>
+      <a class="btn" href="https://ieeexplore.ieee.org/author/592795299827978" target="_blank" rel="noopener">IEEE Author Page</a>
+      <a class="btn" href="https://siddarthyerram.com" target="_blank" rel="noopener">siddarthyerram.com</a>
+      <!-- <a class="btn" href="https://github.com/YOUR-USERNAME" target="_blank" rel="noopener">GitHub</a> -->
+    </div>
+  </header>
+
+  <section id="projects">
+    <h2>Projects</h2>
+
+    <div class="card featured">
+      <span class="badge">★ Published · IEEE</span>
+      <h3>Deep Learning-Based Pattern Recognition Framework for Complex Equation Solving</h3>
+      <p class="meta">Independent research</p>
+      <p>
+        Designed and implemented a neural-network framework that automatically identifies structure in complex
+        mathematical equations and generates solutions. Combined self-directed study of deep learning architectures
+        with applied experimentation, and wrote the findings up as a formal publication.
+      </p>
+      <div class="tags">
+        <span class="tag">Python</span><span class="tag">Deep Learning</span><span class="tag">Neural Networks</span><span class="tag">NumPy</span>
+      </div>
+      <p style="margin-top:14px"><a href="https://ieeexplore.ieee.org/document/11545375" target="_blank" rel="noopener">Read the paper →</a></p>
+    </div>
+
+    <div class="grid two">
+      <div class="card">
+        <h3>Real-Estate Asset Tokenization App</h3>
+        <p class="meta">Safeguard Realty</p>
+        <p>
+          Internal application supporting real-estate data workflows and real asset tokenization for properties —
+          built from requirements gathering through implementation, and in use in several states in India.
+        </p>
+        <div class="tags"><span class="tag">Application Dev</span><span class="tag">Data workflows</span></div>
+      </div>
+
+      <div class="card">
+        <h3>Marketing Analytics Dashboards</h3>
+        <p class="meta">STEM·E Youth Career Development</p>
+        <p>
+          Pipelines that pull and clean data from multiple third-party sources, plus dashboards tracking reach,
+          engagement and impressions that marketing teams use to shape content strategy.
+        </p>
+        <div class="tags"><span class="tag">Python</span><span class="tag">Pandas</span><span class="tag">Data Viz</span></div>
+      </div>
+
+      <div class="card">
+        <h3>Python Game — AI Pathways</h3>
+        <p class="meta">Boys &amp; Girls Clubs of America</p>
+        <p>
+          Led a team to design and build a game programmed in Python, covering game design end to end and
+          presenting the finished project.
+        </p>
+        <div class="tags"><span class="tag">Python</span><span class="tag">Game Dev</span><span class="tag">Team Lead</span></div>
+      </div>
+
+      <div class="card">
+        <h3>Hack the Ram</h3>
+        <p class="meta">Hackathon · 1st Place</p>
+        <p>
+          Took first place at the Hack the Ram hackathon.
+        </p>
+        <div class="tags"><span class="tag">Hackathon</span><span class="tag">Winner</span></div>
+      </div>
+    </div>
+  </section>
+
+  <section id="experience">
+    <h2>Experience</h2>
+
+    <div class="card">
+      <div class="row"><h3>Data Analyst · Safeguard Realty</h3><span class="meta">Oct 2025 – Present · Remote</span></div>
+      <ul>
+        <li>Building an internal application for real-estate data workflows, from requirements through implementation.</li>
+        <li>Supports real asset tokenization for real-estate properties, implemented in several states in India.</li>
+      </ul>
+    </div>
+
+    <div class="card">
+      <div class="row"><h3>Data Analyst · STEM·E Youth Career Development Program</h3><span class="meta">Dec 2024 – Present · Texas</span></div>
+      <ul>
+        <li>Extract, clean and organize data from multiple third-party sources into analysis-ready datasets.</li>
+        <li>Analyze reach, engagement and impressions to evaluate content and campaign effectiveness.</li>
+        <li>Build data-visualization dashboards and present findings and recommendations to marketing teams.</li>
+      </ul>
+    </div>
+
+    <div class="card">
+      <div class="row"><h3>Python Instructor · Steel City Codes</h3><span class="meta">Sep 2023 – Present · Pittsburgh, PA</span></div>
+      <ul>
+        <li>Design and teach a project-based Python curriculum, taking students from fundamentals to independent projects.</li>
+      </ul>
+    </div>
+
+    <div class="card">
+      <div class="row"><h3>Co-Founder · Learners Hub</h3><span class="meta">Dec 2022 – Present · Pittsburgh, PA</span></div>
+      <ul>
+        <li>Co-founded a teen-led club teaching programming and technology literacy to kids internationally.</li>
+      </ul>
+    </div>
+
+    <div class="card">
+      <div class="row"><h3>Robotics Instructor · Area Youth Ministry</h3><span class="meta">Jun 2024 – Aug 2026 · Pittsburgh, PA</span></div>
+      <ul>
+        <li>Led a summer robotics camp for middle schoolers, teaching hands-on engineering and programming.</li>
+      </ul>
+    </div>
+  </section>
+
+  <section id="education">
+    <h2>Education</h2>
+    <div class="card">
+      <div class="row"><h3>Software Development Certificate, Computer Science</h3><span class="meta">May 2024 – Aug 2026</span></div>
+      <p class="meta">Community College of Allegheny County · Dean's List Fall 2025 &amp; Spring 2026 · Phi Theta Kappa</p>
+    </div>
+    <div class="card">
+      <div class="row"><h3>North Allegheny High School</h3><span class="meta">Aug 2023 – May 2027</span></div>
+    </div>
+  </section>
+
+  <section id="skills">
+    <h2>Skills</h2>
+    <dl class="skills">
+      <dt>Languages</dt>
+      <dd><span class="chip">Python</span><span class="chip">C++</span><span class="chip">Java</span><span class="chip">JavaScript</span><span class="chip">HTML</span><span class="chip">CSS</span></dd>
+      <dt>Data &amp; ML</dt>
+      <dd><span class="chip">NumPy</span><span class="chip">Pandas</span><span class="chip">Deep Learning</span><span class="chip">Data Visualization</span></dd>
+      <dt>Hardware</dt>
+      <dd><span class="chip">Arduino</span><span class="chip">Robotics</span></dd>
+    </dl>
+  </section>
+
+  <section id="hobbies">
+    <h2>Hobbies</h2>
+    <div class="grid">
+      <div class="card">
+        <div class="hobby-icon">🎾</div>
+        <h3>Tennis</h3>
+        <p>State champion doubles player and tournament winner. I also founded Steel City Tennis, where I coach youth players with lesson plans built around their skill level.</p>
+      </div>
+      <div class="card">
+        <div class="hobby-icon">🤖</div>
+        <h3>Robotics &amp; Tinkering</h3>
+        <p>Building with Arduino and hardware — and getting middle schoolers excited about it at summer robotics camp.</p>
+      </div>
+      <div class="card">
+        <div class="hobby-icon">🧑‍🏫</div>
+        <h3>Teaching Kids to Code</h3>
+        <p>Through Learners Hub and Steel City Codes, I help students in multiple states and countries write their first programs.</p>
+      </div>
+    </div>
+  </section>
+
+  <section id="awards">
+    <h2>Honors</h2>
+    <div class="card">
+      <ul>
+        <li>1st Place, Hack the Ram</li>
+        <li>Presidential Volunteer Service Award (Gold)</li>
+        <li>Phi Theta Kappa Member</li>
+        <li>Dean's List — Fall 2025 &amp; Spring 2026</li>
+      </ul>
+    </div>
+  </section>
+
+</main>
+
+<footer>
+  © <span id="yr"></span> Siddarth Reddy Yerram · built with HTML &amp; CSS · hosted on GitHub Pages
+</footer>
+<script>document.getElementById('yr').textContent = new Date().getFullYear();</script>
+</body>
+</html>
