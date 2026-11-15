@@ -56,7 +56,7 @@
   .btn:hover { border-color: var(--accent); text-decoration: none; }
   .btn.primary { background: var(--accent); border-color: var(--accent); color: #0d1117; font-weight: 600; }
 
-  section { padding: 56px 0 8px; }
+  section { padding: 56px 0 8px; scroll-margin-top: 20px; }
   h2 {
     font-family: var(--mono); font-size: 14px; text-transform: uppercase; letter-spacing: 0.12em;
     color: var(--accent); margin-bottom: 24px;
@@ -146,6 +146,55 @@
   .stat .lbl { font-size: 12.5px; color: var(--muted); }
   .punchline { font-weight: 600; color: var(--text) !important; margin-top: 18px !important; }
 
+  /* ---- Resume section ---- */
+  .resume-actions { display: flex; flex-wrap: wrap; gap: 10px; margin-bottom: 16px; }
+  .resume-frame {
+    width: 100%; height: 820px; border: 1px solid var(--border); border-radius: 10px;
+    background: #fff; display: block;
+  }
+  @media (max-width: 600px) { .resume-frame { height: 520px; } }
+
+  /* ---- Animations ---- */
+  .cursor {
+    display: inline-block; width: 8px; height: 1em; background: var(--accent);
+    vertical-align: -2px; margin-left: 4px; animation: blink 1s steps(1) infinite;
+  }
+  @keyframes blink { 50% { opacity: 0; } }
+
+  .hero-in { opacity: 0; transform: translateY(14px); animation: fadeUp .7s ease forwards; }
+  .hero-in.d1 { animation-delay: .9s; }
+  .hero-in.d2 { animation-delay: 1.1s; }
+  .hero-in.d3 { animation-delay: 1.3s; }
+  @keyframes fadeUp { to { opacity: 1; transform: none; } }
+
+  header.hero { position: relative; }
+  header.hero::before {
+    content: ''; position: absolute; z-index: -1; top: 20px; left: -120px;
+    width: 420px; height: 420px; border-radius: 50%;
+    background: radial-gradient(circle, rgba(63,185,80,0.18), transparent 65%);
+    animation: drift 12s ease-in-out infinite alternate; pointer-events: none;
+  }
+  @keyframes drift { to { transform: translate(260px, 60px) scale(1.2); } }
+  main { position: relative; z-index: 0; overflow-x: clip; }
+
+  .reveal { opacity: 0; transform: translateY(24px); transition: opacity .6s ease, transform .6s ease; }
+  .reveal.visible { opacity: 1; transform: none; }
+
+  .card { transition: transform .2s ease, border-color .2s ease, box-shadow .2s ease; }
+  .card:not(.whatif):hover {
+    transform: translateY(-4px); border-color: rgba(63,185,80,0.6);
+    box-shadow: 0 8px 24px rgba(0,0,0,0.35);
+  }
+  .btn { transition: border-color .2s ease, transform .2s ease; }
+  .btn:hover { transform: translateY(-2px); }
+  .chip, .tag { transition: transform .15s ease, border-color .15s ease; }
+  .chip:hover { transform: translateY(-2px); border-color: var(--accent); }
+
+  @media (prefers-reduced-motion: reduce) {
+    *, *::before { animation: none !important; transition: none !important; }
+    .hero-in, .reveal { opacity: 1 !important; transform: none !important; }
+  }
+
   footer {
     border-top: 1px solid var(--border); margin-top: 64px; padding: 28px 0;
     font-family: var(--mono); font-size: 12.5px; color: var(--muted); text-align: center;
@@ -170,6 +219,7 @@
       <li><a href="#skills">skills</a></li>
       <li><a href="#hobbies">hobbies</a></li>
       <li><a href="#what-if">what-if</a></li>
+      <li><a href="#resume">resume</a></li>
       <li><a href="playground.html">playground</a></li>
     </ul>
   </div>
@@ -178,15 +228,16 @@
 <main>
 
   <header class="hero" id="about">
-    <p class="prompt"><span>$</span> whoami</p>
-    <h1>Siddarth Reddy Yerram</h1>
-    <p class="tagline">
+    <p class="prompt"><span>$</span> <span id="typed" data-text="whoami">whoami</span><span class="cursor"></span></p>
+    <h1 class="hero-in d1">Siddarth Reddy Yerram</h1>
+    <p class="tagline hero-in d2">
       <strong>Developer &amp; AI/ML researcher.</strong> Self-taught programmer with a published IEEE paper on deep learning
       for mathematical pattern recognition, two years of hands-on data-analysis work, and a habit of teaching
       other kids to code along the way. High School Senior at North Allegheny High School.
     </p>
-    <div class="links">
+    <div class="links hero-in d3">
       <a class="btn primary" href="mailto:sryerram05@gmail.com">Email me</a>
+      <a class="btn" href="#resume">Resume</a>
       <a class="btn" href="https://www.linkedin.com/in/siddarthreddy-yerram-ba6362379" target="_blank" rel="noopener">LinkedIn</a>
       <a class="btn" href="https://ieeexplore.ieee.org/author/592795299827978" target="_blank" rel="noopener">IEEE Author Page</a>
       <a class="btn" href="https://www.instagram.com/sid.darthvader05" target="_blank" rel="noopener">Instagram</a>
@@ -446,11 +497,52 @@
     </div>
   </section>
 
+  <section id="resume">
+    <h2>Resume</h2>
+    <div class="resume-actions">
+      <a class="btn primary" href="https://drive.google.com/file/d/1JfxNzwGlKEFMp8EV8pxUHRnomrvMSd7i/view?usp=sharing" target="_blank" rel="noopener">Open full resume ↗</a>
+      <a class="btn" href="https://drive.google.com/uc?export=download&amp;id=1JfxNzwGlKEFMp8EV8pxUHRnomrvMSd7i">Download PDF ↓</a>
+    </div>
+    <iframe class="resume-frame" src="https://drive.google.com/file/d/1JfxNzwGlKEFMp8EV8pxUHRnomrvMSd7i/preview"
+            title="Siddarth Yerram resume" loading="lazy" allow="autoplay"></iframe>
+  </section>
+
 </main>
 
 <footer>
   © <span id="yr"></span> Siddarth Yerram · built with HTML &amp; CSS · hosted on GitHub Pages
 </footer>
-<script>document.getElementById('yr').textContent = new Date().getFullYear();</script>
+<script>
+  document.getElementById('yr').textContent = new Date().getFullYear();
+
+  const reduceMotion = window.matchMedia('(prefers-reduced-motion: reduce)').matches;
+
+  // Typing effect for "$ whoami"
+  const typed = document.getElementById('typed');
+  if (typed && !reduceMotion) {
+    const text = typed.dataset.text;
+    typed.textContent = '';
+    let i = 0;
+    setTimeout(function type() {
+      typed.textContent = text.slice(0, ++i);
+      if (i < text.length) setTimeout(type, 110);
+    }, 300);
+  }
+
+  // Fade cards and headings in as you scroll
+  if ('IntersectionObserver' in window && !reduceMotion) {
+    const items = document.querySelectorAll('section h2, section .card, .skills, .resume-actions, .resume-frame, .section-intro');
+    const io = new IntersectionObserver((entries) => {
+      entries.forEach((e) => {
+        if (e.isIntersecting) { e.target.classList.add('visible'); io.unobserve(e.target); }
+      });
+    }, { threshold: 0.12 });
+    items.forEach((el, idx) => {
+      el.classList.add('reveal');
+      el.style.transitionDelay = (idx % 3) * 80 + 'ms';
+      io.observe(el);
+    });
+  }
+</script>
 </body>
 </html>
