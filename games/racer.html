@@ -1,0 +1,766 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width, initial-scale=1.0, user-scalable=no">
+<title>Pixel Racer — Playground</title>
+<link href="https://fonts.googleapis.com/css2?family=JetBrains+Mono:wght@400;600&family=Inter:wght@400;500;600&display=swap" rel="stylesheet">
+<link rel="stylesheet" href="game.css">
+<style>
+  body { padding: 16px 12px 40px; }
+  .topbar { max-width: 1100px; }
+  .wrap { position: relative; width: min(100%, 1100px); user-select: none; -webkit-user-select: none; }
+  canvas { width: 100%; height: auto; display: block; border: 1px solid var(--border); border-radius: 12px; background: #1d4a31; }
+
+  .hud { position: absolute; top: 10px; left: 10px; right: 10px; display: flex; justify-content: space-between; gap: 8px; pointer-events: none; font-family: var(--mono); }
+  .hud.hidden { display: none; }
+  .hud .grp { display: flex; gap: 8px; }
+  .hud .box { background: rgba(13,17,23,.8); border: 1px solid var(--border); border-radius: 8px; padding: 4px 12px; font-size: 11px; color: var(--muted); text-transform: uppercase; letter-spacing: .06em; }
+  .hud .box b { display: block; font-size: 18px; color: var(--text); letter-spacing: 0; text-transform: none; }
+
+  .overlay { position: absolute; inset: 0; display: grid; place-items: center; background: rgba(13,17,23,.78); border-radius: 12px; padding: 12px; }
+  .overlay.clear { background: rgba(13,17,23,.35); }
+  .hidden { display: none !important; }
+  .panel { background: var(--panel); border: 1px solid var(--border); border-radius: 12px; padding: 22px 24px; width: min(100%, 460px); max-height: 100%; overflow: auto; }
+  .panel h2 { font-family: var(--mono); color: var(--accent); font-size: 22px; margin-bottom: 4px; }
+  .panel .lead { color: var(--muted); font-size: 13.5px; margin-bottom: 16px; }
+  .field { display: flex; flex-direction: column; gap: 5px; margin-bottom: 14px; font-family: var(--mono); font-size: 12px; color: var(--muted); }
+  input, select {
+    font-family: var(--mono); font-size: 14px; color: var(--text); background: var(--bg);
+    border: 1px solid var(--border); border-radius: 6px; padding: 8px 10px;
+  }
+  input:focus, select:focus { outline: none; border-color: var(--accent); }
+  .row { display: flex; gap: 10px; }
+  .row > * { flex: 1; }
+  .swatches { display: flex; gap: 8px; }
+  .swatch { width: 28px; height: 28px; border-radius: 50%; border: 2px solid transparent; cursor: pointer; }
+  .swatch.on { border-color: var(--text); box-shadow: 0 0 0 2px var(--bg) inset; }
+  .modes { display: flex; flex-direction: column; gap: 8px; margin-top: 4px; }
+  .mode { text-align: left; padding: 12px 14px !important; }
+  .mode b { display: block; font-size: 14px; }
+  .mode span { color: var(--muted); font-size: 12px; }
+  .mode.primary span { color: #0d1117cc; }
+  .btnrow { display: flex; gap: 8px; margin-top: 14px; flex-wrap: wrap; }
+  .btnrow .btn { flex: 1; }
+  .err { color: var(--danger); font-family: var(--mono); font-size: 12.5px; min-height: 18px; margin-top: 8px; }
+  .status { color: var(--muted); font-family: var(--mono); font-size: 12.5px; margin-top: 8px; }
+  .code { font-family: var(--mono); font-size: 40px; font-weight: 600; letter-spacing: .25em; color: var(--accent); text-align: center; margin: 4px 0 2px; }
+  .players { list-style: none; margin: 12px 0; display: flex; flex-direction: column; gap: 6px; }
+  .players li { display: flex; align-items: center; gap: 10px; font-family: var(--mono); font-size: 13.5px; background: var(--bg); border: 1px solid var(--border); border-radius: 6px; padding: 7px 10px; }
+  .dot { width: 12px; height: 12px; border-radius: 3px; flex: none; }
+  .players .tag { margin-left: auto; color: var(--muted); font-size: 11px; }
+  table.res { width: 100%; border-collapse: collapse; font-family: var(--mono); font-size: 13.5px; margin: 10px 0 4px; }
+  table.res td { padding: 7px 6px; border-bottom: 1px solid var(--border); }
+  table.res td:first-child { color: var(--muted); width: 34px; }
+  table.res td:last-child { text-align: right; }
+  table.res tr.me td { color: var(--accent); }
+
+  .count { font-family: var(--mono); font-size: clamp(64px, 14vw, 140px); font-weight: 600; color: var(--accent); text-shadow: 0 0 40px #3fb95088; pointer-events: none; }
+  .toast { position: absolute; bottom: 14px; left: 50%; transform: translateX(-50%); background: rgba(13,17,23,.85); border: 1px solid var(--border); border-radius: 8px; padding: 6px 14px; font-family: var(--mono); font-size: 13px; pointer-events: none; }
+
+  .touch { display: none; width: min(100%, 1100px); justify-content: space-between; margin-top: 12px; gap: 12px; }
+  .touch .grp { display: flex; gap: 10px; }
+  .touch button { width: 72px; height: 72px; border-radius: 14px; font-size: 26px; touch-action: none; }
+  .touch button.on { border-color: var(--accent); background: #1f2a22; }
+  @media (pointer: coarse) { .touch.show { display: flex; } }
+  .help { max-width: 1100px; }
+</style>
+</head>
+<body>
+  <div class="topbar"><a href="../playground.html">← playground</a><a href="../index.html">resume</a></div>
+
+  <div class="wrap">
+    <canvas id="c"></canvas>
+
+    <div class="hud hidden" id="hud">
+      <div class="grp">
+        <div class="box">Lap<b id="hLap">1/3</b></div>
+        <div class="box">Pos<b id="hPos">1/4</b></div>
+      </div>
+      <div class="grp">
+        <div class="box" id="hP2box">P2 lap<b id="hLap2">1/3</b></div>
+        <div class="box">Time<b id="hTime">0:00.0</b></div>
+      </div>
+    </div>
+
+    <div class="overlay clear hidden" id="countWrap"><div class="count" id="count">3</div></div>
+    <div class="toast hidden" id="toast"></div>
+
+    <!-- main menu -->
+    <div class="overlay" id="menu">
+      <div class="panel">
+        <h2>Pixel Racer</h2>
+        <p class="lead">Top-down arcade racing. Race the AI, a friend on the same keyboard, or friends online.</p>
+        <div class="row">
+          <label class="field">Your name <input id="name" maxlength="14" placeholder="Racer"></label>
+        </div>
+        <div class="field">Car color <div class="swatches" id="swatches"></div></div>
+        <div class="row">
+          <label class="field">AI cars
+            <select id="bots"><option>0</option><option>1</option><option>2</option><option selected>3</option><option>4</option><option>5</option></select>
+          </label>
+          <label class="field">AI skill
+            <select id="skill"><option value="0.8">Easy</option><option value="0.88" selected>Normal</option><option value="0.95">Hard</option></select>
+          </label>
+          <label class="field">Laps
+            <select id="laps"><option>1</option><option>2</option><option selected>3</option><option>5</option></select>
+          </label>
+        </div>
+        <div class="modes">
+          <button class="btn primary mode" id="mSolo"><b>▶ Solo vs AI</b><span>Arrow keys or WASD</span></button>
+          <button class="btn mode" id="mLocal"><b>2 players · same keyboard</b><span>P1: WASD · P2: arrow keys</span></button>
+          <button class="btn mode" id="mOnline"><b>Online with friends</b><span>Create a room and share the code (up to 6 players)</span></button>
+        </div>
+      </div>
+    </div>
+
+    <!-- online: create / join -->
+    <div class="overlay hidden" id="online">
+      <div class="panel">
+        <h2>Online race</h2>
+        <p class="lead">Create a room and send the code to your friends, or join theirs.</p>
+        <button class="btn primary" style="width:100%" id="oCreate">Create a room</button>
+        <div class="row" style="margin-top:12px; align-items:center">
+          <input id="oCode" maxlength="4" placeholder="CODE" style="text-transform:uppercase; letter-spacing:.2em; text-align:center">
+          <button class="btn" id="oJoin">Join room</button>
+        </div>
+        <div class="status" id="oStatus"></div>
+        <div class="err" id="oErr"></div>
+        <div class="btnrow"><button class="btn" id="oBack">← Back</button></div>
+      </div>
+    </div>
+
+    <!-- online lobby -->
+    <div class="overlay hidden" id="lobby">
+      <div class="panel">
+        <h2>Lobby</h2>
+        <p class="lead">Room code (friends enter this to join):</p>
+        <div class="code" id="lCode">----</div>
+        <div class="btnrow" style="margin-top:6px"><button class="btn" id="lCopy">Copy invite link</button></div>
+        <ul class="players" id="lPlayers"></ul>
+        <div id="lHost">
+          <label class="field">Laps
+            <select id="lLaps"><option>1</option><option>2</option><option selected>3</option><option>5</option></select>
+          </label>
+          <button class="btn primary" style="width:100%" id="lStart">Start race</button>
+        </div>
+        <div class="status" id="lWait">Waiting for the host to start the race…</div>
+        <div class="btnrow"><button class="btn" id="lLeave">Leave room</button></div>
+      </div>
+    </div>
+
+    <!-- results -->
+    <div class="overlay hidden" id="results">
+      <div class="panel">
+        <h2 id="rTitle">Finished!</h2>
+        <table class="res" id="rTable"></table>
+        <div class="status" id="rNote"></div>
+        <div class="btnrow">
+          <button class="btn primary" id="rAgain">Race again</button>
+          <button class="btn" id="rMenu">Menu</button>
+        </div>
+      </div>
+    </div>
+  </div>
+
+  <div class="touch" id="touch">
+    <div class="grp"><button class="btn" data-k="left">◀</button><button class="btn" data-k="right">▶</button></div>
+    <div class="grp"><button class="btn" data-k="down">▼</button><button class="btn" data-k="up">▲</button></div>
+  </div>
+  <p class="help" id="help">Esc returns to the menu.</p>
+
+<script>
+// =====================================================================
+//  CONFIG: after deploying the server on Render, paste its URL here
+//  (wss:// + your-app-name.onrender.com)
+// =====================================================================
+const SERVER_URL = 'wss://YOUR-APP-NAME.onrender.com';
+
+const params = new URLSearchParams(location.search);
+const WS_URL = params.get('server') || SERVER_URL;   // ?server=ws://localhost:3000 for local testing
+const AUTOPILOT = params.has('autopilot');             // testing: the AI drives your car
+
+// ---------------------------------------------------------------------
+//  Canvas
+// ---------------------------------------------------------------------
+const W = 1100, H = 720, TRACK_W = 80, CAR_R = 13;
+const canvas = document.getElementById('c');
+const ctx = canvas.getContext('2d');
+const DPR = Math.min(2, window.devicePixelRatio || 1);
+canvas.width = W * DPR; canvas.height = H * DPR;
+ctx.scale(DPR, DPR);
+
+// ---------------------------------------------------------------------
+//  Track: a smooth closed curve through control points, resampled to
+//  evenly spaced points. "Progress" around the track = index into PTS.
+// ---------------------------------------------------------------------
+const CTRL = [
+  [230,640],[520,652],[820,640],[975,592],[1035,485],[1000,382],[880,350],[760,392],[640,452],
+  [520,440],[455,360],[495,262],[620,205],[800,195],[945,168],[1000,96],[840,62],[520,72],
+  [240,92],[118,190],[92,395],[118,560]
+];
+
+function catmullRom(points, seg) {
+  const out = [], n = points.length;
+  for (let i = 0; i < n; i++) {
+    const p0 = points[(i - 1 + n) % n], p1 = points[i], p2 = points[(i + 1) % n], p3 = points[(i + 2) % n];
+    for (let s = 0; s < seg; s++) {
+      const t = s / seg, t2 = t * t, t3 = t2 * t;
+      const f = k => 0.5 * (2 * p1[k] + (-p0[k] + p2[k]) * t + (2 * p0[k] - 5 * p1[k] + 4 * p2[k] - p3[k]) * t2 + (-p0[k] + 3 * p1[k] - 3 * p2[k] + p3[k]) * t3);
+      out.push([f(0), f(1)]);
+    }
+  }
+  return out;
+}
+
+function resample(dense, spacing) {
+  const out = [dense[0]];
+  let carry = 0;
+  for (let i = 1; i <= dense.length; i++) {
+    let a = dense[i - 1], b = dense[i % dense.length];
+    let segLen = Math.hypot(b[0] - a[0], b[1] - a[1]);
+    let pos = spacing - carry;
+    while (pos <= segLen) {
+      const t = pos / segLen;
+      out.push([a[0] + (b[0] - a[0]) * t, a[1] + (b[1] - a[1]) * t]);
+      pos += spacing;
+    }
+    carry = segLen - (pos - spacing);
+  }
+  if (Math.hypot(out[0][0] - out.at(-1)[0], out[0][1] - out.at(-1)[1]) < spacing * 0.5) out.pop();
+  return out;
+}
+
+const PTS = resample(catmullRom(CTRL, 40), 8);
+const N = PTS.length;
+const TAN = PTS.map((p, i) => {
+  const a = PTS[(i - 1 + N) % N], b = PTS[(i + 1) % N];
+  return Math.atan2(b[1] - a[1], b[0] - a[0]);
+});
+const NORM = TAN.map(t => [-Math.sin(t), Math.cos(t)]);
+
+const angDiff = (a, b) => { let d = a - b; while (d > Math.PI) d -= 2 * Math.PI; while (d < -Math.PI) d += 2 * Math.PI; return d; };
+const clamp = (v, lo, hi) => Math.max(lo, Math.min(hi, v));
+
+function nearestAll(x, y) {
+  let bi = 0, bd = Infinity;
+  for (let i = 0; i < N; i++) { const d = (PTS[i][0] - x) ** 2 + (PTS[i][1] - y) ** 2; if (d < bd) { bd = d; bi = i; } }
+  return [bi, Math.sqrt(bd)];
+}
+function nearestNear(x, y, hint, win) {
+  let bi = hint, bd = Infinity;
+  for (let k = -win; k <= win; k++) {
+    const i = (hint + k + N) % N;
+    const d = (PTS[i][0] - x) ** 2 + (PTS[i][1] - y) ** 2;
+    if (d < bd) { bd = d; bi = i; }
+  }
+  return bi;
+}
+
+// pre-render the track once
+const trackLayer = document.createElement('canvas');
+trackLayer.width = W * DPR; trackLayer.height = H * DPR;
+(function drawTrack() {
+  const g = trackLayer.getContext('2d');
+  g.scale(DPR, DPR);
+  g.fillStyle = '#1d4a31'; g.fillRect(0, 0, W, H);
+  // grass texture
+  let seed = 7; const rnd = () => (seed = (seed * 16807) % 2147483647) / 2147483647;
+  for (let i = 0; i < 1400; i++) { g.fillStyle = rnd() < 0.5 ? '#21543a' : '#1a432c'; g.fillRect(rnd() * W, rnd() * H, 3, 3); }
+  const path = () => { g.beginPath(); PTS.forEach(([x, y], i) => i ? g.lineTo(x, y) : g.moveTo(x, y)); g.closePath(); };
+  g.lineJoin = g.lineCap = 'round';
+  // run-off shadow
+  path(); g.strokeStyle = 'rgba(0,0,0,.25)'; g.lineWidth = TRACK_W + 26; g.stroke();
+  // red/white kerbs
+  path(); g.strokeStyle = '#f0f0f0'; g.lineWidth = TRACK_W + 14; g.stroke();
+  path(); g.lineCap = 'butt'; g.setLineDash([16, 16]); g.strokeStyle = '#d64541'; g.stroke(); g.setLineDash([]); g.lineCap = 'round';
+  // asphalt
+  path(); g.strokeStyle = '#2f343c'; g.lineWidth = TRACK_W; g.stroke();
+  // center dashes
+  path(); g.setLineDash([20, 22]); g.strokeStyle = 'rgba(255,255,255,.14)'; g.lineWidth = 2; g.stroke(); g.setLineDash([]);
+  // checkered start/finish line at PTS[0]
+  const [sx, sy] = PTS[0], [nx, ny] = NORM[0], tx = Math.cos(TAN[0]), ty = Math.sin(TAN[0]);
+  const sq = 8, cols = Math.round(TRACK_W / sq);
+  for (let c = 0; c < cols; c++) for (let r = 0; r < 2; r++) {
+    const off = -TRACK_W / 2 + c * sq;
+    g.fillStyle = (c + r) % 2 ? '#111' : '#f5f5f5';
+    g.save(); g.translate(sx + nx * off + tx * (r * sq - sq), sy + ny * off + ty * (r * sq - sq)); g.rotate(TAN[0]);
+    g.fillRect(0, 0, sq, sq); g.restore();
+  }
+})();
+
+// ---------------------------------------------------------------------
+//  Cars
+// ---------------------------------------------------------------------
+const COLORS = ['#3fb950', '#58a6ff', '#f85149', '#e3b341', '#bc8cff', '#ff9bce'];
+const BOT_NAMES = ['Turbo', 'Nitro', 'Drift', 'Apex', 'Blitz', 'Comet'];
+const MAX_V = 330, GRASS_V = 135, ACCEL = 430, BRAKE = 720, COAST = 170, TURN = 3.1;
+
+function gridSlot(i) {
+  const idx = (N - 6 - i * 5) % N;            // staggered grid behind the line
+  const lane = (i % 2 ? -1 : 1) * 17;
+  const [px, py] = PTS[idx], [nx, ny] = NORM[idx];
+  return { x: px + nx * lane, y: py + ny * lane, a: TAN[idx], idx };
+}
+
+function makeCar(slot, opts) {
+  const g = gridSlot(slot);
+  return {
+    id: opts.id, name: opts.name, color: opts.color, human: !!opts.human, remote: !!opts.remote,
+    keys: opts.keys || null, ai: opts.ai || null,
+    x: g.x, y: g.y, a: g.a, v: 0, idx: g.idx, total: g.idx - N,
+    finished: false, finishTime: null, input: { up: 0, down: 0, left: 0, right: 0 },
+    tx: g.x, ty: g.y, ta: g.a, // remote targets
+  };
+}
+
+function aiInput(car) {
+  const ai = car.ai;
+  const look = Math.round(9 + Math.abs(car.v) * 0.035);
+  const ti = (car.idx + look) % N;
+  ai.offT -= DT; if (ai.offT <= 0) { ai.offTarget = (Math.random() * 2 - 1) * 18; ai.offT = 2 + Math.random() * 3; }
+  ai.offset += (ai.offTarget - ai.offset) * 0.02;
+  const tx = PTS[ti][0] + NORM[ti][0] * ai.offset, ty = PTS[ti][1] + NORM[ti][1] * ai.offset;
+  const steer = clamp(angDiff(Math.atan2(ty - car.y, tx - car.x), car.a) * 3, -1, 1);
+  // look at how much the track bends ahead and slow down for corners
+  let bend = 0;
+  for (let k = 2; k < 34; k += 4) bend += Math.abs(angDiff(TAN[(car.idx + k + 4) % N], TAN[(car.idx + k) % N]));
+  const target = MAX_V * ai.skill * (1 - Math.min(0.62, bend * 0.62));
+  // un-stick if jammed against something
+  if (Math.abs(car.v) < 12 && raceTime > 1) ai.stuck += DT; else ai.stuck = Math.max(0, ai.stuck - DT);
+  if (ai.stuck > 1.1) { ai.reverse = 0.8; ai.stuck = 0; }
+  if (ai.reverse > 0) { ai.reverse -= DT; return { up: 0, down: 1, steer: -steer }; }
+  return { up: car.v < target ? 1 : 0, down: car.v > target + 30 ? 1 : 0, steer };
+}
+
+function physics(car) {
+  if (car.remote) return;
+  let inp;
+  if (car.finished && car.human && !AUTOPILOT) inp = { up: 0, down: 1, steer: 0 }; // roll to a stop
+  else if (car.ai) inp = aiInput(car);
+  else inp = { up: car.input.up, down: car.input.down, steer: car.input.right - car.input.left };
+
+  const onTrack = nearestAll(car.x, car.y)[1] < TRACK_W / 2 + 5;
+  const top = onTrack ? MAX_V : GRASS_V;
+  if (inp.up) car.v += ACCEL * DT;
+  else if (inp.down) car.v -= (car.v > 0 ? BRAKE : 300) * DT;
+  else car.v -= Math.sign(car.v) * Math.min(Math.abs(car.v), COAST * DT);
+  if (car.finished && car.human && !AUTOPILOT && car.v < 0) car.v = 0;
+  if (car.v > top) car.v = Math.max(top, car.v - 650 * DT);
+  if (car.v < -120) car.v = -120;
+
+  const grip = clamp(Math.abs(car.v) / 110, 0, 1) * (onTrack ? 1 : 0.8);
+  car.a += inp.steer * TURN * grip * Math.sign(car.v) * DT;
+  car.x += Math.cos(car.a) * car.v * DT;
+  car.y += Math.sin(car.a) * car.v * DT;
+
+  // walls at the canvas edge
+  if (car.x < CAR_R || car.x > W - CAR_R || car.y < CAR_R || car.y > H - CAR_R) {
+    car.x = clamp(car.x, CAR_R, W - CAR_R); car.y = clamp(car.y, CAR_R, H - CAR_R); car.v *= 0.5;
+  }
+  trackProgress(car);
+}
+
+function trackProgress(car) {
+  const i = nearestNear(car.x, car.y, car.idx, 30);
+  let d = i - car.idx;
+  if (d < -N / 2) d += N; if (d > N / 2) d -= N;
+  car.total += d; car.idx = i;
+  if (!car.finished && car.total >= laps * N) {
+    car.finished = true; car.finishTime = raceTime;
+    onFinish(car);
+  }
+}
+
+function collide(cars) {
+  for (let i = 0; i < cars.length; i++) for (let j = i + 1; j < cars.length; j++) {
+    const a = cars[i], b = cars[j];
+    if (a.remote && b.remote) continue;
+    const dx = b.x - a.x, dy = b.y - a.y, d = Math.hypot(dx, dy);
+    if (d > 0 && d < CAR_R * 2) {
+      const push = (CAR_R * 2 - d), ux = dx / d, uy = dy / d;
+      const wa = a.remote ? 0 : b.remote ? 1 : 0.5, wb = 1 - wa;
+      a.x -= ux * push * wa; a.y -= uy * push * wa;
+      b.x += ux * push * wb; b.y += uy * push * wb;
+      if (!a.remote) a.v *= 0.985; if (!b.remote) b.v *= 0.985;
+    }
+  }
+}
+
+function drawCar(car) {
+  ctx.save();
+  ctx.translate(car.x, car.y); ctx.rotate(car.a);
+  ctx.fillStyle = 'rgba(0,0,0,.35)'; ctx.beginPath(); ctx.roundRect(-13, -6, 30, 16, 5); ctx.fill();
+  ctx.fillStyle = '#111'; [[-11, -10], [5, -10], [-11, 6], [5, 6]].forEach(([x, y]) => ctx.fillRect(x, y, 8, 4));
+  ctx.fillStyle = car.color; ctx.beginPath(); ctx.roundRect(-15, -8, 30, 16, 5); ctx.fill();
+  ctx.fillStyle = 'rgba(0,0,0,.25)'; ctx.fillRect(-15, -8, 5, 16);               // spoiler
+  ctx.fillStyle = '#9ad1ff'; ctx.beginPath(); ctx.roundRect(2, -6, 6, 12, 2); ctx.fill(); // windshield
+  ctx.fillStyle = 'rgba(255,255,255,.35)'; ctx.fillRect(-9, -1.5, 10, 3);        // stripe
+  ctx.restore();
+  if (!car.name) return;
+  // name tag
+  ctx.font = '600 11px "JetBrains Mono", monospace'; ctx.textAlign = 'center';
+  const label = car.isMe ? `${car.name} (you)` : car.name;
+  ctx.fillStyle = 'rgba(13,17,23,.7)';
+  const w = ctx.measureText(label).width + 8;
+  ctx.fillRect(car.x - w / 2, car.y - 30, w, 15);
+  ctx.fillStyle = car.isMe ? '#fff' : car.color; ctx.fillText(label, car.x, car.y - 19);
+}
+
+// ---------------------------------------------------------------------
+//  Race state
+// ---------------------------------------------------------------------
+const DT = 1 / 120;
+let mode = 'menu';          // menu | solo | local | online
+let phase = 'idle';         // idle | countdown | racing | done
+let cars = [], laps = 3, raceTime = 0, countdownEnd = 0, finishOrder = [];
+let resultsShownAt = 0;
+
+const $ = id => document.getElementById(id);
+const show = (id, on = true) => $(id).classList.toggle('hidden', !on);
+const fmt = t => t == null ? '—' : `${Math.floor(t / 60)}:${(t % 60).toFixed(1).padStart(4, '0')}`;
+const ordinal = n => { const s = ['th', 'st', 'nd', 'rd'], v = n % 100; return n + (s[(v - 20) % 10] || s[v] || s[0]); };
+
+function standings() {
+  return [...cars].sort((a, b) => {
+    if (a.finished && b.finished) return a.finishTime - b.finishTime;
+    if (a.finished !== b.finished) return a.finished ? -1 : 1;
+    return b.total - a.total;
+  });
+}
+
+function beginCountdown(ms) {
+  phase = 'countdown'; raceTime = 0; finishOrder = []; resultsShownAt = 0;
+  countdownEnd = performance.now() + ms;
+  ['menu', 'online', 'lobby', 'results'].forEach(id => show(id, false));
+  show('hud'); show('countWrap');
+  const humans = cars.filter(c => c.human && !c.remote);
+  show('hP2box', humans.length > 1);
+  show('touch'); $('touch').classList.toggle('show', mode !== 'local');
+  canvas.focus?.();
+}
+
+function startLocalRace(kind) {
+  mode = kind;
+  laps = +$('laps').value;
+  const nBots = +$('bots').value, skill = +$('skill').value;
+  const name = cleanName($('name').value);
+  cars = [];
+  const used = new Set([myColor]);
+  const free = () => { const c = COLORS.find(c => !used.has(c)); used.add(c); return c; };
+  let slot = nBots; // humans start at the back of the grid
+  cars.push(makeCar(slot++, { id: 'p1', name: kind === 'local' ? (name || 'P1') : name, color: myColor, human: true,
+    keys: kind === 'local' ? 'wasd' : 'both', ai: AUTOPILOT ? newAI(0.9) : null }));
+  cars[0].isMe = true;
+  if (kind === 'local') {
+    cars.push(makeCar(slot++, { id: 'p2', name: 'P2', color: free(), human: true, keys: 'arrows' }));
+    cars[1].isMe = true;
+  }
+  for (let i = 0; i < nBots; i++) {
+    const s = clamp(skill + (i - (nBots - 1) / 2) * 0.025, 0.7, 0.99);
+    cars.push(makeCar(i, { id: 'bot' + i, name: BOT_NAMES[i], color: free(), ai: newAI(s) }));
+  }
+  beginCountdown(3000);
+}
+
+function newAI(skill) { return { skill, offset: 0, offTarget: 0, offT: 0, stuck: 0, reverse: 0 }; }
+
+function onFinish(car) {
+  finishOrder.push(car);
+  if (mode === 'online' && car.id === myId) net({ t: 'finish', time: car.finishTime });
+  const humansLeft = cars.filter(c => c.human && !c.remote && !c.finished).length;
+  if (car.human && !car.remote) toast(`${car.name} finished ${ordinal(standings().indexOf(car) + 1)}!`);
+  if (humansLeft === 0 && !resultsShownAt) resultsShownAt = performance.now() + 1200;
+}
+
+function step() {
+  if (phase !== 'racing') return;
+  raceTime += DT;
+  for (const c of cars) physics(c);
+  collide(cars);
+  if (mode === 'online') {
+    for (const c of cars) if (c.remote) {
+      c.x += (c.tx - c.x) * 0.15; c.y += (c.ty - c.y) * 0.15; c.a += angDiff(c.ta, c.a) * 0.15;
+    }
+    netSendState();
+  }
+  // everyone done (or the stragglers took too long) -> race over
+  const allDone = cars.every(c => c.finished);
+  const firstHumanDone = finishOrder.find(c => c.human && !c.remote);
+  if (phase === 'racing' && (allDone || (firstHumanDone && mode !== 'online' && raceTime - firstHumanDone.finishTime > 25))) {
+    phase = 'done';
+  }
+}
+
+function render() {
+  ctx.drawImage(trackLayer, 0, 0, W, H);
+  const order = standings();
+  // draw back-to-front so "you" end up on top
+  [...cars].sort((a, b) => (a.isMe ? 1 : 0) - (b.isMe ? 1 : 0)).forEach(drawCar);
+
+  if (phase === 'idle') return;
+  const me = cars.find(c => c.isMe && c.id !== 'p2') || cars[0];
+  const p2 = cars.find(c => c.id === 'p2');
+  const lapOf = c => clamp(Math.floor(c.total / N) + 1, 1, laps);
+  $('hLap').textContent = me.finished ? 'done' : `${lapOf(me)}/${laps}`;
+  $('hPos').textContent = `${order.indexOf(me) + 1}/${cars.length}`;
+  if (p2) $('hLap2').textContent = p2.finished ? 'done' : `${lapOf(p2)}/${laps} · ${ordinal(order.indexOf(p2) + 1)}`;
+  $('hTime').textContent = fmt(me.finished ? me.finishTime : raceTime);
+
+  if (resultsShownAt && performance.now() > resultsShownAt) { showResults(); }
+  if (!$('results').classList.contains('hidden')) fillResults();
+}
+
+// main loop: fixed physics step, render every frame
+let acc = 0, last = performance.now();
+function frame(now) {
+  const dtReal = Math.min(0.1, (now - last) / 1000); last = now;
+  if (phase === 'countdown') {
+    const left = (countdownEnd - now) / 1000;
+    if (left <= 0) { phase = 'racing'; $('count').textContent = 'GO!'; setTimeout(() => show('countWrap', false), 700); }
+    else $('count').textContent = Math.ceil(left);
+  }
+  if (phase === 'racing' || phase === 'done') {
+    acc += dtReal;
+    while (acc >= DT) { if (phase === 'racing') step(); else { raceTime += DT; cars.forEach(physics); } acc -= DT; }
+  } else acc = 0;
+  render();
+  requestAnimationFrame(frame);
+}
+
+// ---------------------------------------------------------------------
+//  Results
+// ---------------------------------------------------------------------
+function showResults() {
+  resultsShownAt = 0;
+  show('results');
+  const online = mode === 'online';
+  $('rAgain').classList.toggle('hidden', online && !isHost);
+  $('rAgain').textContent = online ? 'Start next race' : 'Race again';
+  $('rMenu').textContent = online ? 'Back to lobby' : 'Menu';
+  fillResults();
+}
+
+function fillResults() {
+  const order = standings();
+  const me = cars.find(c => c.isMe);
+  const myPos = order.indexOf(me) + 1;
+  $('rTitle').textContent = mode === 'local' ? 'Race over' : me.finished ? (myPos === 1 ? '🏆 You won!' : `You finished ${ordinal(myPos)}`) : 'Race over';
+  const html = order.map((c, i) => `<tr class="${c.isMe ? 'me' : ''}"><td>${i + 1}</td><td><span class="dot" style="display:inline-block;background:${c.color};margin-right:8px"></span>${esc(c.name)}</td><td>${c.finished ? fmt(c.finishTime) : 'racing…'}</td></tr>`).join('');
+  if ($('rTable').innerHTML !== html) $('rTable').innerHTML = html;
+  $('rNote').textContent = mode === 'online' && !isHost ? 'Waiting for the host to start the next race…' : '';
+}
+
+const esc = s => String(s).replace(/[&<>"']/g, ch => ({ '&': '&amp;', '<': '&lt;', '>': '&gt;', '"': '&quot;', "'": '&#39;' }[ch]));
+const cleanName = n => String(n || '').replace(/[^\w \-]/g, '').trim().slice(0, 14) || 'Racer';
+
+function toast(text, ms = 2200) {
+  $('toast').textContent = text; show('toast');
+  clearTimeout(toast.t); toast.t = setTimeout(() => show('toast', false), ms);
+}
+
+function toMenu() {
+  phase = 'idle'; mode = 'menu'; resultsShownAt = 0;
+  ['hud', 'countWrap', 'results', 'online', 'lobby'].forEach(id => show(id, false));
+  $('touch').classList.remove('show');
+  show('menu');
+  cars = idleCars();
+}
+
+// a few parked cars so the menu doesn't look empty
+function idleCars() { return [0, 1, 2, 3].map(i => makeCar(i, { id: 'x' + i, name: '', color: COLORS[i] })).map(c => (c.name = '', c)); }
+
+// ---------------------------------------------------------------------
+//  Input
+// ---------------------------------------------------------------------
+const KEYMAP = {
+  wasd: { KeyW: 'up', KeyS: 'down', KeyA: 'left', KeyD: 'right' },
+  arrows: { ArrowUp: 'up', ArrowDown: 'down', ArrowLeft: 'left', ArrowRight: 'right' },
+};
+KEYMAP.both = { ...KEYMAP.wasd, ...KEYMAP.arrows };
+
+function setKey(code, val) {
+  let used = false;
+  for (const c of cars) {
+    if (!c.keys || c.remote) continue;
+    const k = KEYMAP[c.keys][code];
+    if (k) { c.input[k] = val; used = true; }
+  }
+  return used;
+}
+addEventListener('keydown', e => {
+  if (e.target.tagName === 'INPUT') return;
+  if (e.code === 'Escape' && phase !== 'idle') { mode === 'online' ? backToLobby() : toMenu(); return; }
+  if (phase !== 'idle' && setKey(e.code, 1)) e.preventDefault();
+});
+addEventListener('keyup', e => setKey(e.code, 0));
+addEventListener('blur', () => cars.forEach(c => c.input = { up: 0, down: 0, left: 0, right: 0 }));
+
+document.querySelectorAll('#touch button').forEach(b => {
+  const set = v => { const me = cars.find(c => c.isMe && !c.remote); if (me) me.input[b.dataset.k] = v; b.classList.toggle('on', !!v); };
+  b.addEventListener('pointerdown', e => { e.preventDefault(); b.setPointerCapture(e.pointerId); set(1); });
+  ['pointerup', 'pointercancel', 'lostpointercapture'].forEach(ev => b.addEventListener(ev, () => set(0)));
+});
+
+// ---------------------------------------------------------------------
+//  Menu wiring
+// ---------------------------------------------------------------------
+let myColor = COLORS[0];
+try { $('name').value = localStorage.getItem('racer-name') || ''; myColor = localStorage.getItem('racer-color') || myColor; } catch (e) {}
+COLORS.forEach(col => {
+  const s = document.createElement('div');
+  s.className = 'swatch' + (col === myColor ? ' on' : ''); s.style.background = col;
+  s.onclick = () => { myColor = col; document.querySelectorAll('.swatch').forEach(x => x.classList.toggle('on', x === s)); savePrefs(); };
+  $('swatches').appendChild(s);
+});
+function savePrefs() { try { localStorage.setItem('racer-name', $('name').value); localStorage.setItem('racer-color', myColor); } catch (e) {} }
+$('name').addEventListener('change', savePrefs);
+
+$('mSolo').onclick = () => { if (+$('bots').value === 0) $('bots').value = 3; savePrefs(); startLocalRace('solo'); };
+$('mLocal').onclick = () => { savePrefs(); startLocalRace('local'); };
+$('mOnline').onclick = () => { savePrefs(); show('menu', false); show('online'); $('oErr').textContent = ''; };
+$('oBack').onclick = () => { show('online', false); show('menu'); };
+$('rAgain').onclick = () => {
+  if (mode === 'online') { net({ t: 'start', laps: +$('lLaps').value }); return; }
+  show('results', false); startLocalRace(mode);
+};
+$('rMenu').onclick = () => mode === 'online' ? backToLobby() : toMenu();
+
+// ---------------------------------------------------------------------
+//  Online multiplayer (WebSocket server on Render)
+// ---------------------------------------------------------------------
+let ws = null, myId = null, isHost = false, room = null, lastSent = 0, pingTimer = null;
+
+function net(msg) { if (ws && ws.readyState === 1) ws.send(JSON.stringify(msg)); }
+
+async function connect() {
+  if (ws && ws.readyState === 1) return true;
+  if (WS_URL.includes('YOUR-APP-NAME')) {
+    $('oErr').textContent = 'Online mode isn\'t set up yet: deploy the server on Render and paste its URL into SERVER_URL in racer.html.';
+    return false;
+  }
+  $('oErr').textContent = '';
+  $('oStatus').textContent = 'Connecting… (the free server may take up to a minute to wake up)';
+  // wake up a sleeping free Render service with a normal HTTP request first
+  try {
+    const ctrl = new AbortController(); const t = setTimeout(() => ctrl.abort(), 75000);
+    await fetch(WS_URL.replace(/^ws/, 'http'), { signal: ctrl.signal, cache: 'no-store' });
+    clearTimeout(t);
+  } catch (e) { /* we'll still try the socket */ }
+  return new Promise(resolve => {
+    ws = new WebSocket(WS_URL);
+    ws.onopen = () => {
+      $('oStatus').textContent = 'Connected ✓';
+      clearInterval(pingTimer); pingTimer = setInterval(() => net({ t: 'ping' }), 20000);
+      resolve(true);
+    };
+    ws.onerror = () => { $('oStatus').textContent = ''; $('oErr').textContent = 'Couldn\'t reach the game server. Try again in a few seconds.'; resolve(false); };
+    ws.onclose = () => {
+      clearInterval(pingTimer);
+      if (mode === 'online') { toast('Disconnected from server', 4000); toMenu(); }
+      ws = null; room = null;
+    };
+    ws.onmessage = e => { try { onNet(JSON.parse(e.data)); } catch (err) { console.error(err); } };
+  });
+}
+
+function onNet(m) {
+  switch (m.t) {
+    case 'welcome': myId = m.id; break;
+    case 'error': $('oErr').textContent = m.msg; $('oStatus').textContent = ''; break;
+    case 'room': {
+      const firstJoin = !room;
+      room = m; isHost = m.hostId === myId; mode = 'online';
+      history.replaceState(null, '', `?room=${m.code}${params.get('server') ? '&server=' + encodeURIComponent(params.get('server')) : ''}${AUTOPILOT ? '&autopilot' : ''}`);
+      renderLobby();
+      if (firstJoin) { show('online', false); show('menu', false); show('lobby'); if (m.state === 'racing') toast('A race is in progress. You\'ll join the next one.', 4000); }
+      // update names/colors of cars in a running race
+      if (phase !== 'idle') { $('rAgain').classList.toggle('hidden', !isHost); fillResults(); }
+      break;
+    }
+    case 'start': {
+      laps = m.laps;
+      const me = room.players.find(p => p.id === myId);
+      cars = m.grid.map((id, slot) => {
+        const p = room.players.find(p => p.id === id) || { name: '?', color: '#888' };
+        const c = makeCar(slot, { id, name: p.name, color: p.color, human: true, remote: id !== myId,
+          keys: id === myId ? 'both' : null, ai: id === myId && AUTOPILOT ? newAI(0.9) : null });
+        c.isMe = id === myId;
+        return c;
+      });
+      if (!me || !cars.some(c => c.isMe)) { toast('Race started without you. You\'ll be in the next one.'); return; }
+      beginCountdown(m.countdown);
+      break;
+    }
+    case 'state': {
+      const c = cars.find(c => c.id === m.id);
+      if (c && c.remote) { c.tx = m.x; c.ty = m.y; c.ta = m.a; c.v = m.v; c.total = m.total; if (Math.hypot(c.tx - c.x, c.ty - c.y) > 120) { c.x = c.tx; c.y = c.ty; } }
+      break;
+    }
+    case 'finish': {
+      const c = cars.find(c => c.id === m.id);
+      if (c && c.remote && !c.finished) { c.finished = true; c.finishTime = m.time; finishOrder.push(c); }
+      break;
+    }
+    case 'left': {
+      const c = cars.find(c => c.id === m.id);
+      if (c && phase !== 'idle') { cars = cars.filter(x => x !== c); toast(`${c.name} left the race`); }
+      break;
+    }
+  }
+}
+
+function netSendState() {
+  const now = performance.now();
+  if (now - lastSent < 50) return; // 20 updates per second
+  lastSent = now;
+  const me = cars.find(c => c.isMe);
+  if (me) net({ t: 'state', x: me.x, y: me.y, a: me.a, v: me.v, total: me.total });
+}
+
+function renderLobby() {
+  if (!room) return;
+  $('lCode').textContent = room.code;
+  $('lPlayers').innerHTML = room.players.map(p =>
+    `<li><span class="dot" style="background:${p.color}"></span>${esc(p.name)}${p.id === myId ? ' (you)' : ''}<span class="tag">${p.id === room.hostId ? 'host' : ''}</span></li>`).join('');
+  show('lHost', isHost); show('lWait', !isHost);
+  $('lStart').textContent = room.players.length > 1 ? `Start race (${room.players.length} players)` : 'Start race (just you)';
+}
+
+function backToLobby() {
+  phase = 'idle'; resultsShownAt = 0;
+  ['hud', 'countWrap', 'results'].forEach(id => show(id, false));
+  $('touch').classList.remove('show');
+  cars = idleCars();
+  if (room) { renderLobby(); show('lobby'); } else toMenu();
+}
+
+$('oCreate').onclick = async () => { if (await connect()) net({ t: 'create', name: cleanName($('name').value) }); };
+$('oJoin').onclick = async () => {
+  const code = $('oCode').value.trim().toUpperCase();
+  if (code.length !== 4) { $('oErr').textContent = 'Room codes are 4 letters.'; return; }
+  if (await connect()) net({ t: 'join', code, name: cleanName($('name').value) });
+};
+$('oCode').addEventListener('keydown', e => { if (e.key === 'Enter') $('oJoin').click(); });
+$('lStart').onclick = () => net({ t: 'start', laps: +$('lLaps').value });
+$('lLeave').onclick = () => { net({ t: 'leave' }); room = null; mode = 'menu'; history.replaceState(null, '', location.pathname + (params.get('server') ? '?server=' + encodeURIComponent(params.get('server')) : '')); show('lobby', false); show('menu'); };
+$('lCopy').onclick = async () => {
+  const url = `${location.origin}${location.pathname}?room=${room.code}`;
+  try { await navigator.clipboard.writeText(url); toast('Invite link copied!'); } catch (e) { toast(url, 6000); }
+};
+
+// opened from an invite link (?room=ABCD): go straight to the join screen
+if (params.get('room')) {
+  show('menu', false); show('online');
+  $('oCode').value = params.get('room').toUpperCase().slice(0, 4);
+  $('oStatus').textContent = 'Enter your name in the menu (← Back) if you like, then hit Join room.';
+}
+
+cars = idleCars();
+requestAnimationFrame(frame);
+
+// test hooks
+window.__racer = { get cars() { return cars; }, get phase() { return phase; }, get raceTime() { return raceTime; }, N, step: () => step(), setPhase: p => phase = p };
+</script>
+</body>
+</html>
